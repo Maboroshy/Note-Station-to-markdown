@@ -7,7 +7,7 @@ After conversion you will get:
 3) All images and attached files in `media` sub-directories inside notebook directories.
 
 # Installation
-1) The script requires `unzip` and `jq` binaries. Please install them with you distribution package management tool. If the script won't find them, it will exit with an error.
+1) The script requires `unzip` and `jq` packages. Please install them with you distribution package management tool. If the script won't find them, it will exit with an error.
 2) Put `nsx2md.sh` to the directory, where you want to convert notes, and give it execute permission.
 
 # Usage
