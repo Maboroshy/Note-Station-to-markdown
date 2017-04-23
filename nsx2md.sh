@@ -11,6 +11,7 @@ IFS=$'\n'
 # Check dependencies
 hash 'unzip' || { printf '%s\n' "Can't find 'unzip' binary. Please install 'unzip' package."; exit; } 
 hash 'jq' || { printf '%s\n' "Can't find 'jq' binary. Please install 'jq' package."; exit ; }
+hash 'pandoc' || { printf '%s\n' "Can't find 'pandoc' binary. Please install 'pandoc' package."; exit; } 
 
 # If there's a command line argument, run the script for specified nsx file exclusively.
 if [[ -n $1 ]]; then 
