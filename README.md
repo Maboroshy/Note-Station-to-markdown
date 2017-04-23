@@ -14,7 +14,7 @@ After conversion you will get:
 1) Export your Synology Note Station notebooks by: Setting -> Import and Export -> Export. You will get .nsx file.
 2) Adjust .nsx file permission if required. Mine was readable only by owner user.
 3) Copy .nsx file(s) to the directory where you've put `nsx2md.sh`.
-4) Run `nsx2md.sh` to convert all .nsx files in the directory. It won't delete them.  
+4) Run `nsx2md.sh` ot `bash nsx2md.sh` to convert all .nsx files in the directory. It won't delete them.  
 ... or run `nsx2md.sh path/to/export.nsx` to convert a specific file. Converted notes will appear where the file is.
 
 That means `nsx2md.sh` can be located anywhere if you specify the file you want to convert.
