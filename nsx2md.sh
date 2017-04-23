@@ -11,12 +11,12 @@ IFS=$'\n'
 # Check dependencies
 hash 'unzip' || { printf '%s\n' "Can't find 'unzip' binary. Please install 'unzip' package."; exit; } 
 hash 'jq' || { printf '%s\n' "Can't find 'jq' binary. Please install 'jq' package."; exit ; }
-hash 'pandoc' || { printf '%s\n' "Can't find 'pandoc' binary. Please install 'pandoc' package."; exit; } 
+hash 'pandoc' || { printf '%s\n' "Can't find 'pandoc' binary. Please install 'pandoc' package."; exit ; }
 
 # If there's a command line argument, run the script for specified nsx file exclusively.
 if [[ -n $1 ]]; then 
-    nsx_files=$1
-    [[ -d ${1%\/*} ]] && cd "${1%\/*}"
+    nsx_files="$1"
+    [[ -d "${1%\/*}" ]] && cd "${1%\/*}"
 else nsx_files="$(find "$(pwd)" -maxdepth 1 -name "*.nsx" -type f)"
 fi
 
@@ -34,8 +34,9 @@ for nsx in $nsx_files; do
         
         # Get notebook title from notebook json.
         notebook_name="$(jq -r '.title' "temp/$notebook_json")"
-        [[ -z $notebook_name ]] && notebook_name="${nsx%.nsx}-$RANDOM"
-        mkdir -p $notebook_name/$media_dir
+        [[ -z "$notebook_name" ]] && notebook_name="${nsx%.nsx}"
+        [[ -d "$notebook_name" ]] && notebook_name="$notebook_name-$RANDOM"
+        mkdir -p "$notebook_name/$media_dir"
         
         # Get all notes json file names.
         note_list="$(jq -r '.note[]?' 'temp/config.json')"
