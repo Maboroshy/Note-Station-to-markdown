@@ -1,4 +1,4 @@
-This script is in beta stage. Please post any issues you'll encounter.
+This project is in beta stage. Please post any issues you'll encounter.
 
 This shell script for GNU/Linux will convert the .nsx export files of Synology Note Station to markdown notes.
 
