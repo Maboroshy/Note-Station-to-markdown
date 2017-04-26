@@ -3,7 +3,7 @@ This shell script for GNU/Linux will convert the .nsx export files of Synology N
 After conversion you will get:
 1) Directories named like exported notebooks;
 2) Notes in those directories as markdown-syntax plain text files with all in-line images and attachments in-place;
-3) Assigned tags will go to note file names as `[tag1,tag2] Note name.md`;
+3) Assigned tags and links to attachments at the beggining of note text;
 3) All images and attached files in `media` sub-directories inside notebook directories.
 
 # Installation
