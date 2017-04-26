@@ -48,8 +48,7 @@ for nsx in $nsx_files; do
             [[ "$(jq -r '.parent_id' "temp/$note")" != "$notebook_json" ]] && continue
             
             title="$(jq -r '.title' "temp/$note")"
-            tag="$(jq -r '.tag[]?' "temp/$note" | tr '\n' ',')"
-            tag="${tag%,}"
+            tag="$(jq -r '.tag[]?' "temp/$note")"
             
             # Convert content from html to markdown.
             content="$(jq -r '.content' "temp/$note" | \
@@ -76,11 +75,15 @@ for nsx in $nsx_files; do
                 attachment_list+="[$name]($link_prepend$media_dir/$name) "
             done
             
-            # Add attachments list to the beginning of the note.
-            [[ -n $attachment_list ]] && content="$(printf '%s\n\n%s' "Attachments: $attachment_list" "$content")"
+            # Add tag list and attachments list to the beginning of the note.
+            [[ -n $attachment_list ]] || [[ -n $tag ]] && content="$(printf '\n%s' "$content")"
+            [[ -n $attachment_list ]] && content="$(printf '%s\n%s' "Attachments: $attachment_list" "$content")"
+            tag="${tag//$'\n'/, }"
+            tag="${tag%, }"
+            [[ -n $tag ]] && content="$(printf '%s\n%s' "Tags: $tag" "$content")"
             
             # Write markdown file.
-            printf '%s' "$content" > "$notebook_name/[$tag] $title.$md_file_ext"
+            printf '%s' "$content" > "$notebook_name/$title.$md_file_ext"
         done
         
         # Delete media directory if no files have been moved there, and it's empty.
