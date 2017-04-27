@@ -19,6 +19,13 @@ After conversion you will get:
 
 That means `nsx2md.sh` can be located anywhere if you specify the file you want to convert.
 
+#### For [QOwnNotes](https://github.com/pbek/QOwnNotes) users
+Tag data that `nsx2md.sh` puts to note text can be imported to QOwnNotes:
+1) Enable provided `import-tag-to-QON.qml` script in QOwnNotes (Note -> Settings -> Scripting);
+2) Add `nsx2md.sh` generated directories as "note folders";
+3) Go through all notes (open each note) for `import-tag-to-QON.qml` script to import their tags.
+4) Disable `import-tag-to-QON.qml` script, so it won't missfire when you'll want to start line with `Tags:` in your note.
+
 # Known issues
 Sometimes `nsx2md.sh` may write to console that it can't find an attachment of some notes. In my case that was because the attached file was missing from the .nsx file. Note Station just haven't exported it for a reason not known to me.  
 The `nsx2md.sh` will tell missing attachment name and a name of note which had it attached, so you can resolve it manually.
