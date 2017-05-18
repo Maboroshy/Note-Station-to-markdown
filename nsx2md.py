@@ -102,4 +102,4 @@ for file in files:
         except OSError:
             pass
         
-input("Conversion finished. Press Enter to quit...")
+input('Conversion finished. Press Enter to quit...')
