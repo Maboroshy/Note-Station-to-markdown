@@ -101,3 +101,5 @@ for file in files:
             os.rmdir(notebook_title + '/' + media_dir)
         except OSError:
             pass
+        
+input("Conversion finished. Press Enter to quit...")
