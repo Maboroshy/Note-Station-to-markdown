@@ -8,7 +8,7 @@ After conversion you will get:
 3) All images and attached files in `media` sub-directories inside notebook directories.
 
 # Installation
-1) The script requires [Python 3 Interpreter](https://www.python.org/downloads/) and [pandoc](http://pandoc.org/installing.html) installed on your system. Get the install package or use the package manager of your OS.
+1) The script requires [Python 3.3 or above](https://www.python.org/downloads/) and [pandoc](http://pandoc.org/installing.html) installed on your system. Get the install package or use the package manager of your OS.
 2) Put `nsx2md.py` to the directory, where you want to convert notes.
 3) (Linux only, optional) Give `nsx2md.py` execute permission.
 
