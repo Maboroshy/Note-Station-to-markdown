@@ -58,7 +58,7 @@ for file in files:
 
             pandoc = subprocess.Popen(['pandoc', '-f', 'html',
                                        '-t', 'markdown_strict+pipe_tables-raw_html',
-                                       '--wrap=none'],
+                                       '--no-wrap'],
                                       stdin=subprocess.PIPE, stdout=subprocess.PIPE)
             content = pandoc.communicate(input=content.encode('utf-8'))[0].decode('utf-8')
 
@@ -86,12 +86,12 @@ for file in files:
                 if ref:
                     content = content.replace(ref, '{}{}/{}'.format(link_prepend, media_dir, name))
 
-            if note_data['tag'] or attachment_list:
+            if note_data.get('tag', '') or attachment_list:
                 content = '\n' + content
 
                 if attachment_list:
                     content = 'Attachments: {}\n{}'.format(' '.join(attachment_list), content)
-                if note_data['tag']:
+                if note_data.get('tag', ''):
                     content = 'Tags: {}\n{}'.format(', '.join(note_data['tag']), content)
 
             with open('{}/{}.{}'.format(notebook_title, note_title, md_file_ext), 'w') as md_note:
