@@ -50,51 +50,52 @@ for file in files:
             note_data = json.loads(nsx.read(note).decode('utf-8'))
             note_title = note_data['title']
 
-            if note_data['parent_id'] == notebook:
-                content = re.sub('<img class="syno-notestation-image-object" src=[^>]*ref="',
-                                 '<img src="', note_data['content'])
+            if note_data['parent_id'] != notebook:
+                continue
 
-                pandoc = subprocess.Popen(['pandoc', '-f', 'html',
-                                           '-t', 'markdown_strict+pipe_tables-raw_html',
-                                           '--wrap=none'],
-                                          stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-                content = pandoc.communicate(input=content.encode('utf-8'))[0].decode('utf-8')
+            content = re.sub('<img class="syno-notestation-image-object" src=[^>]*ref="',
+                             '<img src="', note_data['content'])
 
-                attachment_list = []
+            pandoc = subprocess.Popen(['pandoc', '-f', 'html',
+                                       '-t', 'markdown_strict+pipe_tables-raw_html',
+                                       '--wrap=none'],
+                                      stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+            content = pandoc.communicate(input=content.encode('utf-8'))[0].decode('utf-8')
 
-                for attachment in note_data.get('attachment', ''):
+            attachment_list = []
 
-                    ref = note_data['attachment'][attachment].get('ref', '')
-                    md5 = note_data['attachment'][attachment]['md5']
-                    name = note_data['attachment'][attachment]['name']
+            for attachment in note_data.get('attachment', ''):
 
-                    try:
-                        nsx.extract('file_' + md5, notebook_title + '/' + media_dir)
-                    except Exception:
-                        print('  Can\'t find attachment "{}" of note "{}"'.format(name, note_title))
-                        attachment_list.append('[NOT FOUND]([{}{}/{})'.format(link_prepend, media_dir, name))
-                    else:
-                        if os.path.isfile('{}/{}/{}'.format(notebook_title, media_dir, name)):
-                            name = str(round(time.time())) + '-' + name
+                ref = note_data['attachment'][attachment].get('ref', '')
+                md5 = note_data['attachment'][attachment]['md5']
+                name = note_data['attachment'][attachment]['name']
 
-                        os.rename('{}/{}/file_{}'.format(notebook_title, media_dir, md5),
-                                  '{}/{}/{}'.format(notebook_title, media_dir, name))
-                        attachment_list.append('[{}]([{}{}/{})'.format(name, link_prepend, media_dir, name))
+                try:
+                    nsx.extract('file_' + md5, notebook_title + '/' + media_dir)
+                except Exception:
+                    print('  Can\'t find attachment "{}" of note "{}"'.format(name, note_title))
+                    attachment_list.append('[NOT FOUND]([{}{}/{})'.format(link_prepend, media_dir, name))
+                else:
+                    if os.path.isfile('{}/{}/{}'.format(notebook_title, media_dir, name)):
+                        name = str(round(time.time())) + '-' + name
 
-                    if ref:
-                        content = content.replace(ref, '{}{}/{}'.format(link_prepend, media_dir, name))
+                    os.rename('{}/{}/file_{}'.format(notebook_title, media_dir, md5),
+                              '{}/{}/{}'.format(notebook_title, media_dir, name))
+                    attachment_list.append('[{}]([{}{}/{})'.format(name, link_prepend, media_dir, name))
 
-                if note_data['tag'] or attachment_list:
-                    content = '\n' + content
+                if ref:
+                    content = content.replace(ref, '{}{}/{}'.format(link_prepend, media_dir, name))
 
-                    if attachment_list:
-                        content = 'Attachments: {}\n{}'.format(' '.join(attachment_list), content)
-                    if note_data['tag']:
-                        content = 'Tags: {}\n{}'.format(', '.join(note_data['tag']), content)
+            if note_data['tag'] or attachment_list:
+                content = '\n' + content
 
-            md_note = open('{}/{}.{}'.format(notebook_title, note_title, md_file_ext), 'w')
-            md_note.write(content)
-            md_note.close
+                if attachment_list:
+                    content = 'Attachments: {}\n{}'.format(' '.join(attachment_list), content)
+                if note_data['tag']:
+                    content = 'Tags: {}\n{}'.format(', '.join(note_data['tag']), content)
+
+            with open('{}/{}.{}'.format(notebook_title, note_title, md_file_ext), 'w') as md_note:
+                md_note.write(content)
 
         try:
             os.rmdir(notebook_title + '/' + media_dir)
