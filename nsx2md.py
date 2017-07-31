@@ -6,18 +6,30 @@ import sys
 import time
 import json
 import zipfile
+import platform
+import distutils.version
 import subprocess
 
 # You can adjust some setting here. Default is for QOwnNotes app.
 link_prepend = 'file://'
 media_dir = 'media'
 md_file_ext = 'md'
+insert_title = True
+force_windows_filename_limitations = False
 
 try:
-    subprocess.Popen(['pandoc', '-v'], stdout=subprocess.DEVNULL)
+    pandoc_ver = subprocess.check_output(['pandoc', '-v'], timeout=3).decode('utf-8')[7:].split('\n', 1)[0]
+    print('Found pandoc ' + pandoc_ver)
 except Exception:
     print('Can\'t find pandoc. Please install pandoc or place it to the directory, where the script is.')
     exit()
+
+if distutils.version.LooseVersion(pandoc_ver) < distutils.version.LooseVersion('1.16'):
+    pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html', '--no-wrap']
+elif distutils.version.LooseVersion(pandoc_ver) < distutils.version.LooseVersion('1.19'):
+    pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html', '--wrap=none']
+else:
+    pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html', '--wrap=none', '--atx-headers']
 
 if len(sys.argv) > 1:
     files = sys.argv[1:]
@@ -56,10 +68,7 @@ for file in files:
             content = re.sub('<img class="syno-notestation-image-object" src=[^>]*ref="',
                              '<img src="', note_data['content'])
 
-            pandoc = subprocess.Popen(['pandoc', '-f', 'html',
-                                       '-t', 'markdown_strict+pipe_tables-raw_html',
-                                       '--no-wrap'],
-                                      stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+            pandoc = subprocess.Popen(pandoc_args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
             content = pandoc.communicate(input=content.encode('utf-8'))[0].decode('utf-8')
 
             attachment_list = []
@@ -86,15 +95,34 @@ for file in files:
                 if ref:
                     content = content.replace(ref, '{}{}/{}'.format(link_prepend, media_dir, name))
 
-            if note_data.get('tag', '') or attachment_list:
+            if note_data.get('tag', '') or attachment_list or insert_title:
                 content = '\n' + content
 
-                if attachment_list:
-                    content = 'Attachments: {}\n{}'.format(' '.join(attachment_list), content)
-                if note_data.get('tag', ''):
-                    content = 'Tags: {}\n{}'.format(', '.join(note_data['tag']), content)
+            if attachment_list:
+                content = 'Attachments: {}  \n{}'.format(' '.join(attachment_list), content)
+            if note_data.get('tag', ''):
+                content = 'Tags: {}  \n{}'.format(', '.join(note_data['tag']), content)
+            if insert_title:
+                content = note_title + '\n' + ('=' * len(note_title)) + '\n' + content
 
-            with open('{}/{}.{}'.format(notebook_title, note_title, md_file_ext), 'w') as md_note:
+            if platform.system() == 'Linux' and not force_windows_filename_limitations:
+                md_file_name = note_title.replace('/', '-')
+            elif platform.system() == 'Darwin' and not force_windows_filename_limitations:
+                md_file_name = note_title.replace('/', '-').replace(':', '-')
+            else:
+                md_file_name = note_title
+                for char in (':', '/', '\\', '|'):
+                    md_file_name = md_file_name.replace(char, '-')
+                for char in ('?', '*'):
+                    md_file_name = md_file_name.replace(char, '')
+                md_file_name = md_file_name.replace('<', '(')
+                md_file_name = md_file_name.replace('>', ')')
+                md_file_name = md_file_name.replace('"', "'")
+
+            if note_title != md_file_name:
+                print('  Note "{}" saved as "{}.{}" for compatibility with your OS'.format(note_title, md_file_name, md_file_ext))
+
+            with open('{}/{}.{}'.format(notebook_title, md_file_name, md_file_ext), 'w') as md_note:
                 md_note.write(content)
 
         try:
