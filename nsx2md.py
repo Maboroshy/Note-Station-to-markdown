@@ -66,7 +66,7 @@ for file in files:
                 continue
 
             content = re.sub('<img class="syno-notestation-image-object" src=[^>]*ref="',
-                             '<img src="', note_data['content'])
+                             '<img src="', note_data.get('content', ''))
 
             pandoc = subprocess.Popen(pandoc_args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
             content = pandoc.communicate(input=content.encode('utf-8'))[0].decode('utf-8')
