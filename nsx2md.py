@@ -5,31 +5,46 @@ import re
 import sys
 import time
 import json
+import shutil
 import zipfile
+import tempfile
 import platform
-import distutils.version
 import subprocess
+import distutils.version
+
 
 # You can adjust some setting here. Default is for QOwnNotes app.
 link_prepend = 'file://'
 media_dir = 'media'
 md_file_ext = 'md'
 insert_title = True
+insert_ctime = False
+insert_mtime = False
 force_windows_filename_limitations = False
+
+
+input_file = tempfile.NamedTemporaryFile(delete=False)
+output_file = tempfile.NamedTemporaryFile(delete=False)
+
+if not shutil.which('pandoc') and not os.path.isfile('pandoc'):
+    print('Can\'t find pandoc. Please install pandoc or place it to the directory, where the script is.')
+    exit()
 
 try:
     pandoc_ver = subprocess.check_output(['pandoc', '-v'], timeout=3).decode('utf-8')[7:].split('\n', 1)[0]
     print('Found pandoc ' + pandoc_ver)
 except Exception:
-    print('Can\'t find pandoc. Please install pandoc or place it to the directory, where the script is.')
-    exit()
+    pandoc_ver = '1.19.2.1'
 
 if distutils.version.LooseVersion(pandoc_ver) < distutils.version.LooseVersion('1.16'):
-    pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html', '--no-wrap']
+    pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html', '--no-wrap',
+                   '-o', output_file.name, input_file.name]
 elif distutils.version.LooseVersion(pandoc_ver) < distutils.version.LooseVersion('1.19'):
-    pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html', '--wrap=none']
+    pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html', '--wrap=none',
+                   '-o', output_file.name, input_file.name]
 else:
-    pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html', '--wrap=none', '--atx-headers']
+    pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html', '--wrap=none', '--atx-headers',
+                   '-o', output_file.name, input_file.name]
 
 if len(sys.argv) > 1:
     files = sys.argv[1:]
@@ -56,11 +71,13 @@ for file in files:
         if os.path.isdir(notebook_title):
             notebook_title = str(round(time.time())) + '-' + notebook_title
 
-        os.makedirs(notebook_title + '/' + media_dir)
+        os.makedirs(notebook_title + os.sep + media_dir)
 
         for note in config_data['note']:
             note_data = json.loads(nsx.read(note).decode('utf-8'))
             note_title = note_data['title']
+            note_ctime = note_data.get('ctime', '')
+            note_mtime = note_data.get('mtime', '')
 
             if note_data['parent_id'] != notebook:
                 continue
@@ -68,8 +85,14 @@ for file in files:
             content = re.sub('<img class="syno-notestation-image-object" src=[^>]*ref="',
                              '<img src="', note_data.get('content', ''))
 
-            pandoc = subprocess.Popen(pandoc_args, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-            content = pandoc.communicate(input=content.encode('utf-8'))[0].decode('utf-8')
+            with open(input_file.name, 'w') as input_text:
+                input_text.write(content)
+
+            pandoc = subprocess.Popen(pandoc_args)
+            pandoc.wait(5)
+
+            with open(output_file.name, 'r') as output_text:
+                content = output_text.read()
 
             attachment_list = []
 
@@ -80,7 +103,7 @@ for file in files:
                 name = note_data['attachment'][attachment]['name']
 
                 try:
-                    nsx.extract('file_' + md5, notebook_title + '/' + media_dir)
+                    nsx.extract('file_' + md5, notebook_title + os.sep + media_dir)
                 except Exception:
                     print('  Can\'t find attachment "{}" of note "{}"'.format(name, note_title))
                     attachment_list.append('[NOT FOUND]([{}{}/{})'.format(link_prepend, media_dir, name))
@@ -95,9 +118,15 @@ for file in files:
                 if ref:
                     content = content.replace(ref, '{}{}/{}'.format(link_prepend, media_dir, name))
 
-            if note_data.get('tag', '') or attachment_list or insert_title:
+            if note_data.get('tag', '') or attachment_list or insert_title or insert_ctime or insert_mtime:
                 content = '\n' + content
 
+            if insert_mtime and note_mtime:
+                text_mtime = time.strftime('%Y-%m-%d %H:%M', time.localtime(note_mtime))
+                content = 'Modified: {}  \n{}'.format(text_mtime, content)
+            if insert_ctime and note_ctime:
+                text_ctime = time.strftime('%Y-%m-%d %H:%M', time.localtime(note_mtime))
+                content = 'Created: {}  \n{}'.format(text_ctime, content)
             if attachment_list:
                 content = 'Attachments: {}  \n{}'.format(' '.join(attachment_list), content)
             if note_data.get('tag', ''):
@@ -126,8 +155,13 @@ for file in files:
                 md_note.write(content)
 
         try:
-            os.rmdir(notebook_title + '/' + media_dir)
+            os.rmdir(notebook_title + os.sep + media_dir)
         except OSError:
             pass
+
+input_file.close()
+output_file.close()
+os.unlink(input_file.name)
+os.unlink(output_file.name)
 
 input('Conversion finished. Press Enter to quit...')
