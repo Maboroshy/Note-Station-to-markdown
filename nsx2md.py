@@ -20,15 +20,16 @@ md_file_ext = 'md'
 insert_title = True
 insert_ctime = False
 insert_mtime = False
+creation_date_in_filename = False
 force_windows_filename_limitations = False
 
-
-input_file = tempfile.NamedTemporaryFile(delete=False)
-output_file = tempfile.NamedTemporaryFile(delete=False)
 
 if not shutil.which('pandoc') and not os.path.isfile('pandoc'):
     print('Can\'t find pandoc. Please install pandoc or place it to the directory, where the script is.')
     exit()
+
+input_file = tempfile.NamedTemporaryFile(delete=False)
+output_file = tempfile.NamedTemporaryFile(delete=False)
 
 try:
     pandoc_ver = subprocess.check_output(['pandoc', '-v'], timeout=3).decode('utf-8')[7:].split('\n', 1)[0]
@@ -125,7 +126,7 @@ for file in files:
                 text_mtime = time.strftime('%Y-%m-%d %H:%M', time.localtime(note_mtime))
                 content = 'Modified: {}  \n{}'.format(text_mtime, content)
             if insert_ctime and note_ctime:
-                text_ctime = time.strftime('%Y-%m-%d %H:%M', time.localtime(note_mtime))
+                text_ctime = time.strftime('%Y-%m-%d %H:%M', time.localtime(note_ctime))
                 content = 'Created: {}  \n{}'.format(text_ctime, content)
             if attachment_list:
                 content = 'Attachments: {}  \n{}'.format(' '.join(attachment_list), content)
@@ -133,6 +134,9 @@ for file in files:
                 content = 'Tags: {}  \n{}'.format(', '.join(note_data['tag']), content)
             if insert_title:
                 content = note_title + '\n' + ('=' * len(note_title)) + '\n' + content
+
+            if creation_date_in_filename and note_ctime:
+                note_title = time.strftime('%Y-%m-%d ', time.localtime(note_ctime)) + note_title
 
             if platform.system() == 'Linux' and not force_windows_filename_limitations:
                 md_file_name = note_title.replace('/', '-')
