@@ -86,7 +86,7 @@ for file in files:
             content = re.sub('<img class="syno-notestation-image-object" src=[^>]*ref="',
                              '<img src="', note_data.get('content', ''))
 
-            with open(input_file.name, 'w') as input_text:
+            with open(input_file.name, 'w', encoding='utf-8') as input_text:
                 input_text.write(content)
 
             pandoc = subprocess.Popen(pandoc_args)
