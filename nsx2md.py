@@ -86,13 +86,13 @@ for file in files:
             content = re.sub('<img class="syno-notestation-image-object" src=[^>]*ref="',
                              '<img src="', note_data.get('content', ''))
 
-            with open(input_file.name, 'w') as input_text:
+            with open(input_file.name, 'w', encoding='utf8') as input_text:
                 input_text.write(content)
 
             pandoc = subprocess.Popen(pandoc_args)
             pandoc.wait(5)
 
-            with open(output_file.name, 'r') as output_text:
+            with open(output_file.name, 'r', encoding='utf8') as output_text:
                 content = output_text.read()
 
             attachment_list = []
@@ -155,7 +155,7 @@ for file in files:
             if note_title != md_file_name:
                 print('  Note "{}" saved as "{}.{}" for compatibility with your OS'.format(note_title, md_file_name, md_file_ext))
 
-            with open('{}/{}.{}'.format(notebook_title, md_file_name, md_file_ext), 'w') as md_note:
+            with open('{}/{}.{}'.format(notebook_title, md_file_name, md_file_ext), 'w', encoding='utf8') as md_note:
                 md_note.write(content)
 
         try:
