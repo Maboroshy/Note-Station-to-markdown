@@ -97,27 +97,30 @@ for file in files:
 
             attachment_list = []
 
-            for attachment in note_data.get('attachment', ''):
+            attachments = note_data.get('attachment', '')
+            
+            if (attachments != None):
+                for attachment in attachments:
 
-                ref = note_data['attachment'][attachment].get('ref', '')
-                md5 = note_data['attachment'][attachment]['md5']
-                name = note_data['attachment'][attachment]['name']
+                    ref = note_data['attachment'][attachment].get('ref', '')
+                    md5 = note_data['attachment'][attachment]['md5']
+                    name = note_data['attachment'][attachment]['name']
 
-                try:
-                    nsx.extract('file_' + md5, notebook_title + os.sep + media_dir)
-                except Exception:
-                    print('  Can\'t find attachment "{}" of note "{}"'.format(name, note_title))
-                    attachment_list.append('[NOT FOUND]([{}{}/{})'.format(link_prepend, media_dir, name))
-                else:
-                    if os.path.isfile('{}/{}/{}'.format(notebook_title, media_dir, name)):
-                        name = str(round(time.time())) + '-' + name
+                    try:
+                        nsx.extract('file_' + md5, notebook_title + os.sep + media_dir)
+                    except Exception:
+                        print('  Can\'t find attachment "{}" of note "{}"'.format(name, note_title))
+                        attachment_list.append('[NOT FOUND]([{}{}/{})'.format(link_prepend, media_dir, name))
+                    else:
+                        if os.path.isfile('{}/{}/{}'.format(notebook_title, media_dir, name)):
+                            name = str(round(time.time())) + '-' + name
 
-                    os.rename('{}/{}/file_{}'.format(notebook_title, media_dir, md5),
-                              '{}/{}/{}'.format(notebook_title, media_dir, name))
-                    attachment_list.append('[{}]([{}{}/{})'.format(name, link_prepend, media_dir, name))
+                        os.rename('{}/{}/file_{}'.format(notebook_title, media_dir, md5),
+                                '{}/{}/{}'.format(notebook_title, media_dir, name))
+                        attachment_list.append('[{}]([{}{}/{})'.format(name, link_prepend, media_dir, name))
 
-                if ref:
-                    content = content.replace(ref, '{}{}/{}'.format(link_prepend, media_dir, name))
+                    if ref:
+                        content = content.replace(ref, '{}{}/{}'.format(link_prepend, media_dir, name))
 
             if note_data.get('tag', '') or attachment_list or insert_title or insert_ctime or insert_mtime:
                 content = '\n' + content
