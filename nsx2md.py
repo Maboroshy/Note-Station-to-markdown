@@ -99,7 +99,7 @@ for file in files:
 
             attachments = note_data.get('attachment', '')
             
-            if (attachments != None):
+            if attachments:
                 for attachment in attachments:
 
                     ref = note_data['attachment'][attachment].get('ref', '')
