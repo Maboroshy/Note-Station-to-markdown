@@ -8,7 +8,7 @@ After conversion you will get:
 3) All images and attached files in `media` sub-directories inside notebook directories.
 
 # Installation
-1) The script requires [Python 3.3+](https://www.python.org/downloads/) and [pandoc](http://pandoc.org/installing.html) installed on your system. Get the install package or use the package manager of your OS.
+1) The script requires [Python 3.5+](https://www.python.org/downloads/) and [pandoc](http://pandoc.org/installing.html) installed on your system. Get the install package or use the package manager of your OS.
 2) Put `nsx2md.py` to the directory, where you want to convert notes.
 3) (Linux only, optional) Give `nsx2md.py` execute permission.
 
@@ -32,5 +32,7 @@ Tag data that `nsx2md.py` puts to note text can be imported to QOwnNotes:
 4) Disable `import-tag-to-QON.qml` script, so it won't missfire when you'll want to start line with `Tags:` in your note.
 
 # Known issues
+In-line image links which target internet URLs doesn't work yet.
+
 Sometimes `nsx2md.py` may write to console that it can't find an attachment of some notes. In my case that was because the attached file was missing from the .nsx file. Note Station just haven't exported it for a reason not known to me.  
 The `nsx2md.py` will tell missing attachment name and a name of note which had it attached, so you can resolve it manually. It will also give the link to missing attachments `NOT FOUND` name.
