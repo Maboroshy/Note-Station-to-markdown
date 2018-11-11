@@ -57,7 +57,7 @@ else:
 if len(sys.argv) > 1:
     files = [Path(path) for path in sys.argv[1:]]
 else:
-    files = Path(work_path).glob('*.nsx')  # TEST
+    files = Path(work_path).glob('*.nsx')
 
 
 for file in files:
@@ -89,13 +89,14 @@ for file in files:
                 continue
 
 
-            content = re.sub('<img class="syno-notestation-image-object" src=[^>]*ref="',
+            content = re.sub('<img class="[^"]*syno-notestation-image-object" src=[^>]*ref="',
                              '<img src="', note_data.get('content', ''))
 
-            Path(pandoc_input_file.name).write_text(content)
+
+            Path(pandoc_input_file.name).write_text(content, 'utf-8')
             pandoc = subprocess.Popen(pandoc_args)
             pandoc.wait(5)
-            content = Path(pandoc_output_file.name).read_text()
+            content = Path(pandoc_output_file.name).read_text('utf-8')
 
 
             attachment_list = []
@@ -134,7 +135,9 @@ for file in files:
                         print('  Can\'t find attachment "{}" of note "{}"'.format(name, note_title))
                         attachment_list.append('[NOT FOUND]({})'.format(link_path))
 
-                if ref:
+                if ref and source:
+                    content = content.replace(ref, source)
+                elif ref:
                     content = content.replace(ref, link_path)
 
 
@@ -149,7 +152,7 @@ for file in files:
                 text_ctime = time.strftime('%Y-%m-%d %H:%M', time.localtime(note_ctime))
                 content = 'Created: {}  \n{}'.format(text_ctime, content)
             if attachment_list:
-                content = 'Attachments: {}  \n{}'.format(' '.join(attachment_list), content)
+                content = 'Attachments: {}  \n{}'.format(', '.join(attachment_list), content)
             if note_data.get('tag', ''):
                 content = 'Tags: {}  \n{}'.format(', '.join(note_data['tag']), content)
             if insert_title:
@@ -175,7 +178,7 @@ for file in files:
                 md_file_path = Path(notebook_path / ('{}_{}.{}'.format(md_file_name, n, md_file_ext)))
                 n += 1
 
-            md_file_path.write_text(content)
+            md_file_path.write_text(content, 'utf-8')
 
         try:
             notebook_media_path.rmdir()
