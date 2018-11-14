@@ -108,7 +108,7 @@ for file in files_to_convert:
 
     for note_id in config_data['note']:
         note_data = json.loads(nsx_file.read(note_id).decode('utf-8'))
-        note_title = note_data['title']
+        note_title = note_data.get('title', 'Untitled')
         note_ctime = note_data.get('ctime', '')
         note_mtime = note_data.get('mtime', '')
         parent_notebook_id = note_data['parent_id']
@@ -185,7 +185,7 @@ for file in files_to_convert:
         if creation_date_in_filename and note_ctime:
             note_title = time.strftime('%Y-%m-%d ', time.localtime(note_ctime)) + note_title
 
-        md_file_name = sanitise_path_string(note_title) or 'Unnamed'
+        md_file_name = sanitise_path_string(note_title) or 'Untitled'
         md_file_path = Path(parent_notebook.path / '{}.{}'.format(md_file_name, md_file_ext))
 
         n = 1
