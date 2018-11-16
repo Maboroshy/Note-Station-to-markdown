@@ -10,22 +10,21 @@ import zipfile
 import tempfile
 import subprocess
 import collections
+import urllib.request
 import distutils.version
 
 from pathlib import Path
 
 
 # You can adjust some setting here. Default is for QOwnNotes app.
-link_prepend = 'file:/'
+links_as_URI = True  # True for 'file://link%20target', False for '/link target'
 absolute_links = False  # False for relative links
-convert_spaces_in_links = False  # Replace spaces in links with '%20'
 media_dir_name = 'media'
 md_file_ext = 'md'
 insert_title = True
 insert_ctime = False
 insert_mtime = False
 creation_date_in_filename = False
-force_windows_filename_limitations = False
 
 ############################################################################
 
@@ -52,7 +51,7 @@ pandoc_output_file = tempfile.NamedTemporaryFile(delete=False)
 
 if not shutil.which('pandoc') and not os.path.isfile('pandoc'):
     print('Can\'t find pandoc. Please install pandoc or place it to the directory, where the script is.')
-    exit()
+    exit(1)
 
 try:
     pandoc_ver = subprocess.check_output(['pandoc', '-v'], timeout=3).decode('utf-8')[7:].split('\n', 1)[0]
@@ -141,13 +140,17 @@ for file in files_to_convert:
                 name = ''.join((name_parts[0], '_{}'.format(n), name_parts[1], name_parts[2]))
                 n += 1
 
-            if absolute_links:
-                link_path = ''.join((link_prepend, str(parent_notebook.media_path), '/', name))
+            if links_as_URI:
+                if absolute_links:
+                    link_path = Path(parent_notebook.media_path / name).as_uri()
+                else:
+                    link_path = 'file://{}/{}'.format(urllib.request.pathname2url(media_dir_name),
+                                                      urllib.request.pathname2url(name))
             else:
-                link_path = '/'.join((link_prepend, media_dir_name, name))
-
-            if convert_spaces_in_links:
-                link_path = link_path.replace(' ', '%20')
+                if absolute_links:
+                    link_path = str(Path(parent_notebook.media_path / name))
+                else:
+                    link_path = '{}/{}'.format(media_dir_name, name)
 
             try:
                 Path(parent_notebook.media_path / name).write_bytes(nsx_file.read('file_' + md5))
@@ -156,7 +159,7 @@ for file in files_to_convert:
                 if source:
                     attachment_list.append('[{}]({})'.format(name, source))
                 else:
-                    print('  Can\'t find attachment "{}" of note "{}"'.format(name, note_title))
+                    print('Can\'t find attachment "{}" of note "{}"'.format(name, note_title))
                     attachment_list.append('[NOT FOUND]({})'.format(link_path))
 
             if ref and source:
