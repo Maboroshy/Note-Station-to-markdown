@@ -43,7 +43,7 @@ def sanitise_path_string(path_str):
     return path_str
 
 
-work_path = Path(__file__).parent
+work_path = Path.cwd()
 media_dir_name = sanitise_path_string(media_dir_name)
 pandoc_input_file = tempfile.NamedTemporaryFile(delete=False)
 pandoc_output_file = tempfile.NamedTemporaryFile(delete=False)
