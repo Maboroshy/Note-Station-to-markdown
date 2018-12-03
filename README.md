@@ -1,4 +1,4 @@
-This script will convert notes from Synology Note Station to plain-text markdown notes.
+This script will convert notes from Synology Note Station to plain-text markdown notes.  
 The script is written in Python and should work on any desktop platform. It's tested on Linux and Windows 7. 
 
 After conversion you will get:
@@ -17,22 +17,30 @@ After conversion you will get:
 2) Adjust .nsx file permission if required. Mine was readable only by owner user.
 3) Copy .nsx file(s) to the directory where you've put `nsx2md.py`.
 4) Run `nsx2md.py` or `python nsx2md.py` to convert all .nsx files in the directory. It won't delete them.  
+
 ... or run `nsx2md.py path/to/export.nsx` to convert a specific file. Converted notes will appear where the file is.
 
-That means `nsx2md.py` can be located anywhere if you specify the file you want to convert.
+That means `nsx2md.py` can be located anywhere as long as you specify the file you want to convert.
 
 # Optional settings
-Inside the script you can make some adjustments to the link format for local files. Default is `file://media/file.jpg` which is used by [QOwnNotes](https://github.com/pbek/QOwnNotes) and mostly works with other markdown editors.
+Inside the script you can make some adjustments to the link format and notes metadata:  
+`links_as_URI` - `True` for `file://link%20target` style links, `False` for `/link target` style links;  
+`absolute_links` - `True` for absolute links, `False` for relative links;  
+`media_dir_name` - name of the directory inside the produced directory where all images and attachemnst will be stored;   
+`md_file_ext` - extension for produced markdown syntax note files;  
+`insert_title` - `True` to insert note title as a markdown heading at the first line, `False` to disable;  
+`insert_ctime` - `True` to insert note creation time to the beggining of the note text, `False` to disable;  
+`insert_mtime` - `True` to insert note modifictation time to the beggining of the note text, `False` to disable;  
+`creation_date_in_filename` - `True` to insert note creation time to the note file name, `False` to disable.  
 
 # For [QOwnNotes](https://github.com/pbek/QOwnNotes) users
-Tag data that `nsx2md.py` puts to note text can be imported to QOwnNotes:
-1) Enable provided `import-tag-to-QON.qml` script in QOwnNotes (Note -> Settings -> Scripting);
-2) Add `nsx2md.py` generated directories as "note folders";
-3) Go through all notes (open each note) for `import-tag-to-QON.qml` script to import their tags.
-4) Disable `import-tag-to-QON.qml` script, so it won't missfire when you'll want to start line with `Tags:` in your note.
-
-# Known issues
-In-line image links which target internet URLs doesn't work yet.
-
-Sometimes `nsx2md.py` may write to console that it can't find an attachment of some notes. In my case that was because the attached file was missing from the .nsx file. Note Station just haven't exported it for a reason not known to me.  
-The `nsx2md.py` will tell missing attachment name and a name of note which had it attached, so you can resolve it manually. It will also give the link to missing attachments `NOT FOUND` name.
+Tag data that `nsx2md.py` puts to note text can be imported to QOwnNotes:  
+1) Add notebook directories produced by `nsx2md.py` as QOwnNotes note folders;  
+2) Set one of these note folders as current;  
+3) Enable provided `import_tags.qml` script in QOwnNotes (Note -> Settings -> Scripting) (`remove_tag_line.py` should be at the same directory);  
+4) The script will add 2 new buttons and menu items:  
+    `1. Import tags` - to import tags from the tag lines of all the notes in the current note folder  
+    `2. Remove tag lines` - to remove the tag lines from all the notes in the current folder  
+5) Use the buttons in the according order, any previous QOwnNotes tag data for the note folder will be lost;  
+6) Move to the next note folder produced by `nsx2md.py`, repeat #5;  
+7) Disable `import_tags.qml` script. That is obligatory.
