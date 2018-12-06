@@ -18,7 +18,7 @@ Script {
 
     property string scriptDirPath
     property bool enabled: false
-    property var importedNotes: []
+    property var notesToRemoveLines: []
     
     function init() {
         script.registerCustomAction('importTags', '1. Import tags from notes', '1. Import tags')
@@ -38,29 +38,36 @@ Script {
             else
                 var pyBin = 'python3'
                 
-            const args = [scriptDirPath + script.dirSeparator() + 'remove_tag_line.py'].concat(importedNotes)
+            const args = [scriptDirPath + script.dirSeparator() + 'remove_tag_line.py'].concat(notesToRemoveLines)
             
             script.startDetachedProcess(pyBin, args)
             
-            script.informationMessageBox('Tag lines removed from ' + importedNotes.length + ' notes.\n' + 
+            notesToRemoveLines = []
+            
+            script.informationMessageBox('Tag lines removed from ' + notesToRemoveLines.length + ' notes.\n' + 
                                          'Please, disable Import tags script now.\n' +
-                                         'Otherwise you may loose tag data.', 
+                                         'If you import notes with tag lines removed, you will loose tag data.', 
                                          'Import tags script')
         }
     }
     
     function noteTaggingHook(note, action, tagName, newTagName) {
         if (action == 'list') {
-            if (enabled == false || importedNotes.indexOf(note.fullNoteFilePath) != -1)
+            if (enabled == false)
                 return note.tagNames()
                 
             const tagLine = note.noteText.match(/^Tags: (.*)/m)
-            importedNotes.push(note.fullNoteFilePath)
+            notesToRemoveLines.push(note.fullNoteFilePath)
             
             if (tagLine == null) 
                 return ''
-            else            
-                return tagLine[1].split(', ')
+                      
+            var tags = tagLine[1].split(', ')
+            
+            for (var i = 0; i < tags.length; i++)
+                tags[i] = tags[i].trim()
+            
+            return tags
         }
     }
 }
