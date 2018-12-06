@@ -44,9 +44,9 @@ Script {
             
             notesToRemoveLines = []
             
-            script.informationMessageBox('Tag lines removed from ' + notesToRemoveLines.length + ' notes.\n' + 
+            script.informationMessageBox('Tag lines removed from all notes in the folder.\n' + 
                                          'Please, disable Import tags script now.\n' +
-                                         'If you import notes with tag lines removed, you will loose tag data.', 
+                                         'If you push "Import tags" button with tag lines removed, you will loose tag data.', 
                                          'Import tags script')
         }
     }
