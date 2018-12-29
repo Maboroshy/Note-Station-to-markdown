@@ -18,7 +18,7 @@ from pathlib import Path
 
 # You can adjust some setting here. Default is for QOwnNotes app.
 links_as_URI = True  # True for 'file://link%20target', False for '/link target'
-absolute_links = False  # False for relative links
+absolute_links = True  # False for relative links
 media_dir_name = 'media'
 md_file_ext = 'md'
 insert_title = True
@@ -125,47 +125,49 @@ for file in files_to_convert:
         content = Path(pandoc_output_file.name).read_text('utf-8')
 
 
+        attachments_data = note_data.get('attachment')
         attachment_list = []
 
-        for attachment_id in note_data.get('attachment', ''):
+        if attachments_data:
+            for attachment_id in note_data.get('attachment', ''):
 
-            ref = note_data['attachment'][attachment_id].get('ref', '')
-            md5 = note_data['attachment'][attachment_id]['md5']
-            source = note_data['attachment'][attachment_id].get('source', '')
-            name = sanitise_path_string(note_data['attachment'][attachment_id]['name'])
+                ref = note_data['attachment'][attachment_id].get('ref', '')
+                md5 = note_data['attachment'][attachment_id]['md5']
+                source = note_data['attachment'][attachment_id].get('source', '')
+                name = sanitise_path_string(note_data['attachment'][attachment_id]['name'])
 
-            n = 1
-            while Path(parent_notebook.media_path / name).is_file():
-                name_parts = name.rpartition('.')
-                name = ''.join((name_parts[0], '_{}'.format(n), name_parts[1], name_parts[2]))
-                n += 1
+                n = 1
+                while Path(parent_notebook.media_path / name).is_file():
+                    name_parts = name.rpartition('.')
+                    name = ''.join((name_parts[0], '_{}'.format(n), name_parts[1], name_parts[2]))
+                    n += 1
 
-            if links_as_URI:
-                if absolute_links:
-                    link_path = Path(parent_notebook.media_path / name).as_uri()
+                if links_as_URI:
+                    if absolute_links:
+                        link_path = Path(parent_notebook.media_path / name).as_uri()
+                    else:
+                        link_path = 'file://{}/{}'.format(urllib.request.pathname2url(media_dir_name),
+                                                          urllib.request.pathname2url(name))
                 else:
-                    link_path = 'file://{}/{}'.format(urllib.request.pathname2url(media_dir_name),
-                                                      urllib.request.pathname2url(name))
-            else:
-                if absolute_links:
-                    link_path = str(Path(parent_notebook.media_path / name))
-                else:
-                    link_path = '{}/{}'.format(media_dir_name, name)
+                    if absolute_links:
+                        link_path = str(Path(parent_notebook.media_path / name))
+                    else:
+                        link_path = '{}/{}'.format(media_dir_name, name)
 
-            try:
-                Path(parent_notebook.media_path / name).write_bytes(nsx_file.read('file_' + md5))
-                attachment_list.append('[{}]({})'.format(name, link_path))
-            except Exception:
-                if source:
-                    attachment_list.append('[{}]({})'.format(name, source))
-                else:
-                    print('Can\'t find attachment "{}" of note "{}"'.format(name, note_title))
-                    attachment_list.append('[NOT FOUND]({})'.format(link_path))
+                try:
+                    Path(parent_notebook.media_path / name).write_bytes(nsx_file.read('file_' + md5))
+                    attachment_list.append('[{}]({})'.format(name, link_path))
+                except Exception:
+                    if source:
+                        attachment_list.append('[{}]({})'.format(name, source))
+                    else:
+                        print('Can\'t find attachment "{}" of note "{}"'.format(name, note_title))
+                        attachment_list.append('[NOT FOUND]({})'.format(link_path))
 
-            if ref and source:
-                content = content.replace(ref, source)
-            elif ref:
-                content = content.replace(ref, link_path)
+                if ref and source:
+                    content = content.replace(ref, source)
+                elif ref:
+                    content = content.replace(ref, link_path)
 
 
         if note_data.get('tag', '') or attachment_list or insert_title \
