@@ -25,6 +25,9 @@ insert_title = True
 insert_ctime = False
 insert_mtime = False
 creation_date_in_filename = False
+use_at_tags = False  # True for using experimental @tags of QOwnNotes
+truncate_title = True  # True to catch problems with titles that are too long
+truncate_title_chars = 200  # Do not allow more than X characters for a title
 
 ############################################################################
 
@@ -39,7 +42,9 @@ def sanitise_path_string(path_str):
         path_str = path_str.replace('<', '(')
         path_str = path_str.replace('>', ')')
         path_str = path_str.replace('"', "'")
-
+    if truncate_title and len(path_str) > truncate_title_chars:
+        path_str = path_str[:truncate_title_chars]
+    
     return path_str
 
 
@@ -182,7 +187,9 @@ for file in files_to_convert:
             content = 'Created: {}  \n{}'.format(text_ctime, content)
         if attachment_list:
             content = 'Attachments: {}  \n{}'.format(', '.join(attachment_list), content)
-        if note_data.get('tag', ''):
+        if note_data.get('tag', '') and use_at_tags:
+            content = 'Tags: @{}  \n{}'.format(', @'.join(note_data['tag']), content)
+        else:
             content = 'Tags: {}  \n{}'.format(', '.join(note_data['tag']), content)
         if insert_title:
             content = '{}\n{}\n{}'.format(note_title, '=' * len(note_title), content)
