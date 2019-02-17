@@ -17,14 +17,18 @@ from pathlib import Path
 
 
 # You can adjust some setting here. Default is for QOwnNotes app.
-links_as_URI = True  # True for 'file://link%20target', False for '/link target'
-absolute_links = True  # False for relative links
-media_dir_name = 'media'
-md_file_ext = 'md'
-insert_title = True
-insert_ctime = False
-insert_mtime = False
-creation_date_in_filename = False
+links_as_URI = True  # True for file://link%20target style links, False for /link target style links
+absolute_links = True  # True for absolute links, False for relative links
+media_dir_name = 'media'  # name of the directory inside the produced directory where all images and attachments will be stored
+md_file_ext = 'md'  # extension for produced markdown syntax note files
+insert_title = True  # True to insert note title as a markdown heading at the first line, False to disable
+insert_ctime = False  # True to insert note creation time to the beggining of the note text, False to disable
+insert_mtime = False  # True to insert note modifictation time to the beggining of the note text, False to disable
+creation_date_in_filename = False  # True to insert note creation time to the note file name, False to disable
+
+tag_prepend = ''  # string to prepend each tag in a tag list inside the note, default is empty
+tag_delimiter = ', '  # string to delimit tags, default is comma separated list
+no_spaces_in_tags = False  # True to replace spaces in tag names with '_', False to keep spaces
 
 ############################################################################
 
@@ -40,7 +44,7 @@ def sanitise_path_string(path_str):
         path_str = path_str.replace('>', ')')
         path_str = path_str.replace('"', "'")
 
-    return path_str
+    return path_str[:240]
 
 
 work_path = Path.cwd()
@@ -107,11 +111,16 @@ for file in files_to_convert:
 
     for note_id in config_data['note']:
         note_data = json.loads(nsx_file.read(note_id).decode('utf-8'))
+
+        try:
+            parent_notebook_id = note_data['parent_id']
+            parent_notebook = notebook_id_to_path_index[parent_notebook_id]
+        except KeyError:
+            continue
+
         note_title = note_data.get('title', 'Untitled')
         note_ctime = note_data.get('ctime', '')
         note_mtime = note_data.get('mtime', '')
-        parent_notebook_id = note_data['parent_id']
-        parent_notebook = notebook_id_to_path_index[parent_notebook_id]
 
         print('Converting note "{}"'.format(note_title))
 
@@ -183,7 +192,10 @@ for file in files_to_convert:
         if attachment_list:
             content = 'Attachments: {}  \n{}'.format(', '.join(attachment_list), content)
         if note_data.get('tag', ''):
-            content = 'Tags: {}  \n{}'.format(', '.join(note_data['tag']), content)
+            if no_spaces_in_tags:
+                note_data['tag'] = [tag.replace(' ', '_') for tag in note_data['tag']]
+            tag_list = tag_delimiter.join(''.join((tag_prepend, tag)) for tag in note_data['tag'])
+            content = 'Tags: {}  \n{}'.format(tag_list, content)
         if insert_title:
             content = '{}\n{}\n{}'.format(note_title, '=' * len(note_title), content)
 
