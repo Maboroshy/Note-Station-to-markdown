@@ -34,7 +34,7 @@ Inside the script you can make some adjustments to the link format and notes met
 `creation_date_in_filename` - `True` to insert note creation time to the note file name, `False` to disable;  
 `tag_prepend` - string to prepend each tag in a tag list inside the note, default is empty;  
 `tag_delimiter` - string to delimit tags, default is comma separated list;  
-`no_spaces_in_tags` - True to replace spaces in tag names with '_', False to keep spaces.
+`no_spaces_in_tags` - `True` to replace spaces in tag names with '_', `False` to keep spaces.
 
 # For [QOwnNotes](https://github.com/pbek/QOwnNotes) users
 There are several ways to get tags from converted notes to work in QOwnNotes:
