@@ -107,20 +107,23 @@ for file in files_to_convert:
         notebook_id_to_path_index[notebook_id] = Notebook(notebook_path, notebook_media_path)
 
 
-    converted_note_count = 0
+    note_id_to_title_index = {}
+    converted_note_ids = []
 
     for note_id in config_data['note']:
         note_data = json.loads(nsx_file.read(note_id).decode('utf-8'))
+
+        note_title = note_data.get('title', 'Untitled')
+        note_ctime = note_data.get('ctime', '')
+        note_mtime = note_data.get('mtime', '')
+
+        note_id_to_title_index[note_id] = note_title
 
         try:
             parent_notebook_id = note_data['parent_id']
             parent_notebook = notebook_id_to_path_index[parent_notebook_id]
         except KeyError:
             continue
-
-        note_title = note_data.get('title', 'Untitled')
-        note_ctime = note_data.get('ctime', '')
-        note_mtime = note_data.get('mtime', '')
 
         print('Converting note "{}"'.format(note_title))
 
@@ -130,7 +133,7 @@ for file in files_to_convert:
 
         Path(pandoc_input_file.name).write_text(content, 'utf-8')
         pandoc = subprocess.Popen(pandoc_args)
-        pandoc.wait(20)
+        pandoc.wait(5)
         content = Path(pandoc_output_file.name).read_text('utf-8')
 
 
@@ -212,7 +215,8 @@ for file in files_to_convert:
             n += 1
 
         md_file_path.write_text(content, 'utf-8')
-        converted_note_count += 1
+
+        converted_note_ids.append(note_id)
 
     for notebook in notebook_id_to_path_index.values():
         try:
@@ -226,5 +230,15 @@ pandoc_output_file.close()
 os.unlink(pandoc_input_file.name)
 os.unlink(pandoc_output_file.name)
 
-input('Converted {} notebooks and {} out of {} notes. Press Enter to quit...'.format(
-            len(config_data['notebook']), converted_note_count, len(config_data['note'])))
+
+not_converted_note_ids = set(note_id_to_title_index.keys()) - set(converted_note_ids)
+
+print('\nConverted {} notebooks and {} out of {} notes.'.format(len(config_data['notebook']),
+                                                                len(converted_note_ids),
+                                                                len(note_id_to_title_index.keys())))
+if not_converted_note_ids:
+    print('Failed to convert notes:',
+          '\n'.join(('    {} (ID: {})'.format(note_id_to_title_index[note_id], note_id)
+                                                for note_id in not_converted_note_ids)),
+          sep='\n')
+input('Press Enter to quit...')
