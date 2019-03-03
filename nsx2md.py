@@ -133,7 +133,7 @@ for file in files_to_convert:
 
         Path(pandoc_input_file.name).write_text(content, 'utf-8')
         pandoc = subprocess.Popen(pandoc_args)
-        pandoc.wait(5)
+        pandoc.wait(20)
         content = Path(pandoc_output_file.name).read_text('utf-8')
 
 
