@@ -84,12 +84,23 @@ if not files_to_convert:
     print('No .nsx files found')
     exit(1)
 
-
 for file in files_to_convert:
     nsx_file = zipfile.ZipFile(str(file))
     config_data = json.loads(nsx_file.read('config.json').decode('utf-8'))
-
     notebook_id_to_path_index = {}
+
+    recycle_bin_path = work_path / Path('Recycle bin')
+
+    n = 1
+    while recycle_bin_path.is_dir():
+        recycle_bin_path = work_path / Path('{}_{}'.format('Recycle bin', n))
+        n += 1
+
+    recycle_bin_media_path = recycle_bin_path / media_dir_name
+    recycle_bin_media_path.mkdir(parents=True)
+    notebook_id_to_path_index['1027_#00000000'] = Notebook(recycle_bin_path, recycle_bin_media_path)
+
+    print('Extracting notes from {}'.format(file.name))
 
     for notebook_id in config_data['notebook']:
         notebook_data = json.loads(nsx_file.read(notebook_id).decode('utf-8'))
@@ -224,21 +235,31 @@ for file in files_to_convert:
         except OSError:
             pass
 
+    not_converted_note_ids = set(note_id_to_title_index.keys()) - set(converted_note_ids)
+
+    if not_converted_note_ids:
+        print('Failed to convert notes:',
+              '\n'.join(('    {} (ID: {})'.format(note_id_to_title_index[note_id], note_id)
+                         for note_id in not_converted_note_ids)),
+              sep='\n')
+
+    if len(config_data['notebook']) == 1:
+        notebook_log_str = 'notebook'
+    else:
+        notebook_log_str = 'notebooks'
+
+    print('Converted {} {} and {} out of {} notes.\n'.format(len(config_data['notebook']),
+                                                             notebook_log_str,
+                                                             len(converted_note_ids),
+                                                             len(note_id_to_title_index.keys())))
+    try:
+        recycle_bin_media_path.rmdir()
+    except OSError:
+        pass
 
 pandoc_input_file.close()
 pandoc_output_file.close()
 os.unlink(pandoc_input_file.name)
 os.unlink(pandoc_output_file.name)
 
-
-not_converted_note_ids = set(note_id_to_title_index.keys()) - set(converted_note_ids)
-
-print('\nConverted {} notebooks and {} out of {} notes.'.format(len(config_data['notebook']),
-                                                                len(converted_note_ids),
-                                                                len(note_id_to_title_index.keys())))
-if not_converted_note_ids:
-    print('Failed to convert notes:',
-          '\n'.join(('    {} (ID: {})'.format(note_id_to_title_index[note_id], note_id)
-                                                for note_id in not_converted_note_ids)),
-          sep='\n')
 input('Press Enter to quit...')
