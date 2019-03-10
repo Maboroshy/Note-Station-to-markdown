@@ -100,7 +100,7 @@ for file in files_to_convert:
     recycle_bin_media_path.mkdir(parents=True)
     notebook_id_to_path_index['1027_#00000000'] = Notebook(recycle_bin_path, recycle_bin_media_path)
 
-    print('Extracting notes from {}'.format(file.name))
+    print('Extracting notes from "{}"'.format(file.name))
 
     for notebook_id in config_data['notebook']:
         notebook_data = json.loads(nsx_file.read(notebook_id).decode('utf-8'))
@@ -254,6 +254,7 @@ for file in files_to_convert:
                                                              len(note_id_to_title_index.keys())))
     try:
         recycle_bin_media_path.rmdir()
+        recycle_bin_path.rmdir()
     except OSError:
         pass
 
