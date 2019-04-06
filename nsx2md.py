@@ -40,9 +40,9 @@ def sanitise_path_string(path_str):
         path_str = path_str.replace(char, '-')
     for char in ('?', '*'):
         path_str = path_str.replace(char, '')
-        path_str = path_str.replace('<', '(')
-        path_str = path_str.replace('>', ')')
-        path_str = path_str.replace('"', "'")
+    path_str = path_str.replace('<', '(')
+    path_str = path_str.replace('>', ')')
+    path_str = path_str.replace('"', "'")
 
     return path_str[:240]
 
