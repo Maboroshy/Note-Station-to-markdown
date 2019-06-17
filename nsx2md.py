@@ -58,7 +58,7 @@ if not shutil.which('pandoc') and not os.path.isfile('pandoc'):
     exit(1)
 
 try:
-    pandoc_ver = subprocess.check_output(['pandoc', '-v'], timeout=3).decode('utf-8')[7:].split('\n', 1)[0]
+    pandoc_ver = subprocess.check_output(['pandoc', '-v'], timeout=3).decode('utf-8')[7:].split('\n', 1)[0].strip()
     print('Found pandoc ' + pandoc_ver)
 except Exception:
     pandoc_ver = '1.19.2.1'
