@@ -60,20 +60,21 @@ if not shutil.which('pandoc') and not os.path.isfile('pandoc'):
 try:
     pandoc_ver = subprocess.check_output(['pandoc', '-v'], timeout=3).decode('utf-8')[7:].split('\n', 1)[0].strip()
     print('Found pandoc ' + pandoc_ver)
-except Exception:
-    pandoc_ver = '1.19.2.1'
 
-if distutils.version.LooseVersion(pandoc_ver) < distutils.version.LooseVersion('1.16'):
-    pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html',
-                   '--no-wrap', '-o', pandoc_output_file.name, pandoc_input_file.name]
-elif distutils.version.LooseVersion(pandoc_ver) < distutils.version.LooseVersion('1.19'):
-    pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html',
-                   '--wrap=none', '-o', pandoc_output_file.name, pandoc_input_file.name]
-else:
+    if distutils.version.LooseVersion(pandoc_ver) < distutils.version.LooseVersion('1.16'):
+        pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html',
+                       '--no-wrap', '-o', pandoc_output_file.name, pandoc_input_file.name]
+    elif distutils.version.LooseVersion(pandoc_ver) < distutils.version.LooseVersion('1.19'):
+        pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html',
+                       '--wrap=none', '-o', pandoc_output_file.name, pandoc_input_file.name]
+    else:
+        pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html',
+                       '--wrap=none', '--atx-headers', '-o',
+                       pandoc_output_file.name, pandoc_input_file.name]
+except Exception:
     pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html',
                    '--wrap=none', '--atx-headers', '-o',
                    pandoc_output_file.name, pandoc_input_file.name]
-
 
 if len(sys.argv) > 1:
     files_to_convert = [Path(path) for path in sys.argv[1:]]
@@ -116,7 +117,6 @@ for file in files_to_convert:
         notebook_media_path.mkdir(parents=True)
 
         notebook_id_to_path_index[notebook_id] = Notebook(notebook_path, notebook_media_path)
-
 
     note_id_to_title_index = {}
     converted_note_ids = []
