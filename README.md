@@ -7,7 +7,8 @@ After conversion you will get:
 3) Assigned tags and links to attachments at the beginning of note text;
 3) All images and attached files in `media` sub-directories inside notebook directories.
 
-# Installation
+## Local installation
+
 1) The script requires [Python 3.5+](https://www.python.org/downloads/) and [pandoc](http://pandoc.org/installing.html) installed on your system. Get the install package or use the package manager of your OS.
 2) Put `nsx2md.py` to the directory, where you want to convert notes.
 3) (Linux only, optional) Give `nsx2md.py` execute permission.
@@ -21,6 +22,17 @@ After conversion you will get:
 ... or run `nsx2md.py path/to/export.nsx` to convert a specific file. Converted notes will appear where the file is.
 
 That means `nsx2md.py` can be located anywhere as long as you specify the file you want to convert.
+
+## Docker setup
+
+build Docker image  
+
+`docker build -t nsx2md .`  
+
+run the docker image  
+
+`docker run -it -v "$PWD:/nsx2md nsx2md <file.nsx>`  
+
 
 # Optional settings
 Inside the script you can make some adjustments to the link format and notes metadata:  
