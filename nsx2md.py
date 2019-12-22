@@ -138,8 +138,8 @@ for file in files_to_convert:
 
         print('Converting note "{}"'.format(note_title))
 
-        content = re.sub('<img class="[^"]*syno-notestation-image-object" src=[^>]*ref="',
-                         '<img src="', note_data.get('content', ''))
+        content = re.sub('<img class=[^>]*syno-notestation-image-object[^>]*src=[^>]*ref=',
+                         '<img src=', note_data.get('content', ''))
 
 
         Path(pandoc_input_file.name).write_text(content, 'utf-8')
@@ -158,6 +158,7 @@ for file in files_to_convert:
                 md5 = note_data['attachment'][attachment_id]['md5']
                 source = note_data['attachment'][attachment_id].get('source', '')
                 name = sanitise_path_string(note_data['attachment'][attachment_id]['name'])
+                name = name.replace('ns_attach_image_', '')
 
                 n = 1
                 while Path(parent_notebook.media_path / name).is_file():
@@ -179,18 +180,21 @@ for file in files_to_convert:
 
                 try:
                     Path(parent_notebook.media_path / name).write_bytes(nsx_file.read('file_' + md5))
-                    attachment_list.append('[{}]({})'.format(name, link_path))
+                    attachment_link = '[{}]({})'.format(name, link_path)
                 except Exception:
                     if source:
-                        attachment_list.append('[{}]({})'.format(name, source))
+                        attachment_link = '[{}]({})'.format(name, source)
                     else:
                         print('Can\'t find attachment "{}" of note "{}"'.format(name, note_title))
-                        attachment_list.append('[NOT FOUND]({})'.format(link_path))
+                        attachment_link = '[NOT FOUND]({})'.format(link_path)
+
 
                 if ref and source:
                     content = content.replace(ref, source)
                 elif ref:
                     content = content.replace(ref, link_path)
+                else:
+                    attachment_list.append(attachment_link)
 
 
         if note_data.get('tag', '') or attachment_list or insert_title \
@@ -254,6 +258,10 @@ for file in files_to_convert:
                                                              len(note_id_to_title_index.keys())))
     try:
         recycle_bin_media_path.rmdir()
+    except OSError:
+        pass
+
+    try:
         recycle_bin_path.rmdir()
     except OSError:
         pass
