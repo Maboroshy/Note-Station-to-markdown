@@ -17,13 +17,21 @@ from pathlib import Path
 
 
 # You can adjust some setting here. Default is for QOwnNotes app.
+yaml_front_matter = True  # True will insert an empty YAML block at the top of the document, False no block and the other YAML settings are not used.
+yaml_insert_title = True  # True will add the title of the note as a field in the YAML block, False no title in block.
+yaml_insert_ctime = True  # True to insert note creation time in the YAML block, False to disable.
+yaml_insert_mtime = True  # True to insert note modification time in the YAML block, False to disable.
+yaml_tags = True  #  True to insert an array of tags, False to disable
+yaml_tag_prepend = ''  # string to prepend each tag in a tag list inside the note, default is empty.  Note some md software do not require a symbol such as a hash in the yaml but do in the md text.
+yaml_no_spaces_in_tags = True  # True to replace spaces in tag names with '_', False to keep spaces.  Note some md software can accept spaces in tag names in YAML but not in the md text.
+
 links_as_URI = True  # True for file://link%20target style links, False for /link target style links
 absolute_links = False  # True for absolute links, False for relative links
 media_dir_name = 'media'  # name of the directory inside the produced directory where all images and attachments will be stored
 md_file_ext = 'md'  # extension for produced markdown syntax note files
 insert_title = True  # True to insert note title as a markdown heading at the first line, False to disable
-insert_ctime = False  # True to insert note creation time to the beggining of the note text, False to disable
-insert_mtime = False  # True to insert note modifictation time to the beggining of the note text, False to disable
+insert_ctime = False  # True to insert note creation time to the beginning of the note text, False to disable
+insert_mtime = False  # True to insert note modification time to the beginning of the note text, False to disable
 creation_date_in_filename = False  # True to insert note creation time to the note file name, False to disable
 
 tag_prepend = ''  # string to prepend each tag in a tag list inside the note, default is empty
@@ -47,7 +55,33 @@ def sanitise_path_string(path_str):
     return path_str[:240]
 
 
-work_path = Path.cwd()
+def create_yaml_block():
+    yaml_block = '---\n'
+
+    if yaml_insert_title:
+        yaml_block = '{}Title: "{}"\n'.format(yaml_block, note_title)
+
+    if yaml_insert_ctime and note_ctime:
+        yaml_text_ctime = time.strftime('%Y-%m-%d %H:%M', time.localtime(note_ctime))
+        yaml_block = '{}Created: "{}"\n'.format(yaml_block, yaml_text_ctime)
+
+    if yaml_insert_mtime and note_mtime:
+        yaml_text_mtime = time.strftime('%Y-%m-%d %H:%M', time.localtime(note_mtime))
+        yaml_block = '{}Modified: "{}"\n'.format(yaml_block, yaml_text_mtime)
+
+    if yaml_tags and note_data.get('tag', ''):
+        if yaml_no_spaces_in_tags:
+            note_data['tag'] = [tag.replace(' ', '_') for tag in note_data['tag']]
+        yaml_tag_list = tag_delimiter.join(''.join((yaml_tag_prepend, tag)) for tag in note_data['tag'])
+        yaml_block = '{}Tags: [{}]\n'.format(yaml_block, yaml_tag_list)
+
+    yaml_block = '{}---\n'.format(yaml_block)
+
+    return yaml_block
+
+
+
+work_path = Path.joinpath(Path.cwd(), "notes")
 media_dir_name = sanitise_path_string(media_dir_name)
 pandoc_input_file = tempfile.NamedTemporaryFile(delete=False)
 pandoc_output_file = tempfile.NamedTemporaryFile(delete=False)
@@ -219,6 +253,9 @@ for file in files_to_convert:
 
         if creation_date_in_filename and note_ctime:
             note_title = time.strftime('%Y-%m-%d ', time.localtime(note_ctime)) + note_title
+
+        if yaml_front_matter:
+            content = '{}\n{}'.format(create_yaml_block(), content)
 
         md_file_name = sanitise_path_string(note_title) or 'Untitled'
         md_file_path = Path(parent_notebook.path / '{}.{}'.format(md_file_name, md_file_ext))
