@@ -17,7 +17,7 @@ from pathlib import Path
 
 
 # You can adjust some setting here. Default is for QOwnNotes app.
-yaml_front_matter = True  # True will insert an empty YAML block at the top of the document, False no block and the other YAML settings are not used.
+yaml_front_matter = False  # True will insert an empty YAML block at the top of the document, False no block and the other YAML settings are not used.
 yaml_insert_title = True  # True will add the title of the note as a field in the YAML block, False no title in block.
 yaml_insert_ctime = True  # True to insert note creation time in the YAML block, False to disable.
 yaml_insert_mtime = True  # True to insert note modification time in the YAML block, False to disable.
