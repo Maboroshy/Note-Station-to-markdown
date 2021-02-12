@@ -81,7 +81,7 @@ def create_yaml_block():
 
 
 
-work_path = Path.joinpath(Path.cwd(), "notes")
+work_path = Path.cwd()
 media_dir_name = sanitise_path_string(media_dir_name)
 pandoc_input_file = tempfile.NamedTemporaryFile(delete=False)
 pandoc_output_file = tempfile.NamedTemporaryFile(delete=False)
