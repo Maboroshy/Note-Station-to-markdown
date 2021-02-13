@@ -25,8 +25,8 @@ yaml_tags = True  #  True to insert an array of tags, False to disable
 yaml_tag_prepend = ''  # string to prepend each tag in a tag list inside the note, default is empty.  Note some md software do not require a symbol such as a hash in the yaml but do in the md text.
 yaml_no_spaces_in_tags = True  # True to replace spaces in tag names with '_', False to keep spaces.  Note some md software can accept spaces in tag names in YAML but not in the md text.
 
-links_as_URI = True  # True for file://link%20target style links, False for /link target style links
-absolute_links = False  # True for absolute links, False for relative links
+links_as_URI = False  # True for file://link%20target style links, False for /link target style links
+absolute_links = True  # True for absolute links, False for relative links
 media_dir_name = 'media'  # name of the directory inside the produced directory where all images and attachments will be stored
 md_file_ext = 'md'  # extension for produced markdown syntax note files
 insert_title = True  # True to insert note title as a markdown heading at the first line, False to disable

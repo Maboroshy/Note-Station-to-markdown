@@ -48,6 +48,15 @@ Inside the script you can make some adjustments to the link format and notes met
 `tag_delimiter` - string to delimit tags, default is comma separated list;  
 `no_spaces_in_tags` - `True` to replace spaces in tag names with '_', `False` to keep spaces.
 
+An optional YAML header can be added to store metadata using the following options:    
+`yaml_front_matter` - `True` will insert an empty YAML block at the top of the document, `False` no block;  
+`yaml_insert_title` - `True` will add the title of the note as a field in the YAML block, `False` no title in block;  
+`yaml_insert_ctime` - `True` to insert note creation time in the YAML block, `False` to disable;  
+`yaml_insert_mtime` - `True` to insert note modification time in the YAML block, `False` to disable;  
+`yaml_tags` -  `True` to insert an array of tags, `False` to disable;  
+`yaml_tag_prepend` - string to prepend each tag in a tag list, default is empty;  
+`yaml_no_spaces_in_tags` - `True` to replace spaces in tag names with '_', `False` to keep spaces.
+
 # For [QOwnNotes](https://github.com/pbek/QOwnNotes) users
 There are several ways to get tags from converted notes to work in QOwnNotes:
 
