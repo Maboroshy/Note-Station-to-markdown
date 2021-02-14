@@ -1,5 +1,5 @@
 This script will convert notes from Synology Note Station to plain-text markdown notes.  
-The script is written in Python and should work on any desktop platform. It's tested on Linux, Windows 7, mac OS 10.15
+The script is written in Python and should work on any desktop platform. It's tested on Linux, Windows 7, mac OS 10.15.
 
 After conversion you will get:
 1) Directories named like exported notebooks;
