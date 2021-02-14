@@ -12,12 +12,13 @@ import subprocess
 import collections
 import urllib.request
 import distutils.version
+from urllib.parse import unquote
 
 from pathlib import Path
 
 
 # You can adjust some setting here. Default is for QOwnNotes app.
-links_as_URI = True  # True for file://link%20target style links, False for /link target style links
+links_as_URI = False  # True for file://link%20target style links, False for /link target style links
 absolute_links = False  # True for absolute links, False for relative links
 media_dir_name = 'media'  # name of the directory inside the produced directory where all images and attachments will be stored
 md_file_ext = 'md'  # extension for produced markdown syntax note files
@@ -43,6 +44,7 @@ def sanitise_path_string(path_str):
     path_str = path_str.replace('<', '(')
     path_str = path_str.replace('>', ')')
     path_str = path_str.replace('"', "'")
+    path_str = urllib.parse.unquote(path_str)
 
     return path_str[:240]
 
