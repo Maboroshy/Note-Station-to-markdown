@@ -1,11 +1,11 @@
 This script will convert notes from Synology Note Station to plain-text markdown notes.  
-The script is written in Python and should work on any desktop platform. It's tested on Linux and Windows 7. 
+The script is written in Python and should work on any desktop platform. It's tested on Linux, Windows 7, mac OS 10.15.
 
 After conversion you will get:
 1) Directories named like exported notebooks;
 2) Notes in those directories as markdown-syntax plain text files with all in-line images in-place;
 3) Assigned tags and links to attachments at the beginning of note text;
-3) All images and attached files in `media` sub-directories inside notebook directories.
+4) All images and attached files in `media` sub-directories inside notebook directories.
 
 ## Local installation
 
@@ -17,7 +17,8 @@ After conversion you will get:
 1) Export your Synology Note Station notebooks by: Setting -> Import and Export -> Export. You will get .nsx file.
 2) Adjust .nsx file permission if required. Mine was readable only by owner user.
 3) Copy .nsx file(s) to the directory where you've put `nsx2md.py`.
-4) Run `nsx2md.py` or `python nsx2md.py` to convert all .nsx files in the directory. It won't delete them.  
+4) Set any option settings - see the Optional settings section below.
+5) Run `nsx2md.py` or `python nsx2md.py` to convert all .nsx files in the directory. It won't delete them.  
 
 ... or run `nsx2md.py path/to/export.nsx` to convert a specific file. Converted notes will appear where the file is.
 
