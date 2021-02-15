@@ -69,13 +69,17 @@ try:
     elif distutils.version.LooseVersion(pandoc_ver) < distutils.version.LooseVersion('1.19'):
         pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html',
                        '--wrap=none', '-o', pandoc_output_file.name, pandoc_input_file.name]
-    else:
+    elif distutils.version.LooseVersion(pandoc_ver) < distutils.version.LooseVersion('2.11.2'):
         pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html',
                        '--wrap=none', '--atx-headers', '-o',
                        pandoc_output_file.name, pandoc_input_file.name]
+    else:
+        pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html',
+                       '--wrap=none', '--markdown-headings=atx', '-o',
+                       pandoc_output_file.name, pandoc_input_file.name]
 except Exception:
     pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html',
-                   '--wrap=none', '--atx-headers', '-o',
+                   '--wrap=none', '--markdown-headings=atx', '-o',
                    pandoc_output_file.name, pandoc_input_file.name]
 
 if len(sys.argv) > 1:
