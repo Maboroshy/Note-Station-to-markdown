@@ -12,6 +12,7 @@ import subprocess
 import collections
 import urllib.request
 import distutils.version
+from urllib.parse import unquote
 
 from pathlib import Path
 
@@ -51,6 +52,7 @@ def sanitise_path_string(path_str):
     path_str = path_str.replace('<', '(')
     path_str = path_str.replace('>', ')')
     path_str = path_str.replace('"', "'")
+    path_str = urllib.parse.unquote(path_str)
 
     return path_str[:240]
 
@@ -101,13 +103,17 @@ try:
     elif distutils.version.LooseVersion(pandoc_ver) < distutils.version.LooseVersion('1.19'):
         pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html',
                        '--wrap=none', '-o', pandoc_output_file.name, pandoc_input_file.name]
-    else:
+    elif distutils.version.LooseVersion(pandoc_ver) < distutils.version.LooseVersion('2.11.2'):
         pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html',
                        '--wrap=none', '--atx-headers', '-o',
                        pandoc_output_file.name, pandoc_input_file.name]
+    else:
+        pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html',
+                       '--wrap=none', '--markdown-headings=atx', '-o',
+                       pandoc_output_file.name, pandoc_input_file.name]
 except Exception:
     pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html',
-                   '--wrap=none', '--atx-headers', '-o',
+                   '--wrap=none', '--markdown-headings=atx', '-o',
                    pandoc_output_file.name, pandoc_input_file.name]
 
 if len(sys.argv) > 1:
