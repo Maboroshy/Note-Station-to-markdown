@@ -37,17 +37,24 @@ run the docker image
 
 # Optional settings
 Inside the script you can make some adjustments to the link format and notes metadata:  
-`links_as_URI` - `True` for `file://link%20target` style links, `False` for `/link target` style links;  
-`absolute_links` - `True` for absolute links, `False` for relative links;  
-`media_dir_name` - name of the directory inside the produced directory where all images and attachments will be stored;   
-`md_file_ext` - extension for produced markdown syntax note files;  
+Select meta data options:
+`meta_data_in_yaml` - `True`  YAML block the following meta data that are set True, `False` meta data will be in text;  
 `insert_title` - `True` to insert note title as a markdown heading at the first line, `False` to disable;  
 `insert_ctime` - `True` to insert note creation time to the beginning of the note text, `False` to disable;  
 `insert_mtime` - `True` to insert note modification time to the beginning of the note text, `False` to disable;  
-`creation_date_in_filename` - `True` to insert note creation time to the note file name, `False` to disable;  
+`tags` -  `True` to insert list of tags, `False` to disable;  
 `tag_prepend` - string to prepend each tag in a tag list inside the note, default is empty;  
 `tag_delimiter` - string to delimit tags, default is comma separated list;  
 `no_spaces_in_tags` - `True` to replace spaces in tag names with '_', `False` to keep spaces.
+
+Select file link options:
+`links_as_URI` - `True` for `file://link%20target` style links, `False` for `/link target` style links;  
+`absolute_links` - `True` for absolute links, `False` for relative links;  
+
+Select File/Attachments/Media options:
+`media_dir_name` - name of the directory inside the produced directory where all images and attachments will be stored;   
+`md_file_ext` - extension for produced markdown syntax note files;  
+`creation_date_in_filename` - `True` to insert note creation time to the note file name, `False` to disable;
 
 # For [QOwnNotes](https://github.com/pbek/QOwnNotes) users
 There are several ways to get tags from converted notes to work in QOwnNotes:
