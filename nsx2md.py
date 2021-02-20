@@ -18,7 +18,8 @@ from pathlib import Path
 
 
 # You can adjust some setting here. Default is for QOwnNotes app.
-#  Select meta data options
+
+## Select meta data options
 meta_data_in_yaml = False  # True a YAML front matter block will contain the following meta data items.  
                            # False any selected meta data options below will be in the md text
 insert_title = True  # True will add the title of the note as a field in the YAML block, False no title in block.
@@ -29,11 +30,11 @@ tag_prepend = ''  # string to prepend each tag in a tag list inside the note, de
 tag_delimiter = ', '  # string to delimit tags, default is comma separated list
 no_spaces_in_tags = False  # True to replace spaces in tag names with '_', False to keep spaces
 
-#Select file link options
+## Select file link options
 links_as_URI = True  # True for file://link%20target style links, False for /link target style links
 absolute_links = False  # True for absolute links, False for relative links
 
-# Select File/Attachments/Media options
+## Select File/Attachments/Media options
 media_dir_name = 'media'  # name of the directory inside the produced directory where all images and attachments will be stored
 md_file_ext = 'md'  # extension for produced markdown syntax note files
 creation_date_in_filename = False  # True to insert note creation time to the note file name, False to disable.
@@ -56,7 +57,7 @@ def sanitise_path_string(path_str):
     return path_str[:240]
 
 
-def create_yaml_block():
+def create_yaml_meta_block():
     yaml_block = '---\n'
 
     if insert_title:
@@ -77,8 +78,37 @@ def create_yaml_block():
         yaml_block = '{}Tags: [{}]\n'.format(yaml_block, yaml_tag_list)
 
     yaml_block = '{}---\n'.format(yaml_block)
-
+    
+    if attachment_list:
+        yaml_block = '{}\nAttachments:  {}\n'.format(yaml_block, ', '.join(attachment_list))
+    
     return yaml_block
+
+
+def create_text_meta_block():
+    text_block = ''
+    
+    if insert_mtime and note_mtime:
+        text_mtime = time.strftime('%Y-%m-%d %H:%M', time.localtime(note_mtime))
+        text_block = 'Modified: {}  \n{}'.format(text_mtime, text_block)
+        
+    if insert_ctime and note_ctime:
+        text_ctime = time.strftime('%Y-%m-%d %H:%M', time.localtime(note_ctime))
+        text_block = 'Created: {}  \n{}'.format(text_ctime, text_block)
+        
+    if attachment_list:
+        text_block = 'Attachments: {}  \n{}'.format(', '.join(attachment_list), text_block)
+        
+    if note_data.get('tag', '') and tags:
+        if no_spaces_in_tags:
+            note_data['tag'] = [tag.replace(' ', '_') for tag in note_data['tag']]
+        tag_list = tag_delimiter.join(''.join((tag_prepend, tag)) for tag in note_data['tag'])
+        text_block = 'Tags: {}  \n{}'.format(tag_list, text_block)
+    
+    if insert_title:
+        text_block = '{}\n{}\n{}'.format(note_title, '=' * len(note_title), text_block)
+    
+    return text_block
 
 
 work_path = Path.cwd()
@@ -240,32 +270,14 @@ for file in files_to_convert:
             content = '\n' + content
 
 
-        if not meta_data_in_yaml:
-            if insert_mtime and note_mtime:
-                text_mtime = time.strftime('%Y-%m-%d %H:%M', time.localtime(note_mtime))
-                content = 'Modified: {}  \n{}'.format(text_mtime, content)
-            if insert_ctime and note_ctime:
-                text_ctime = time.strftime('%Y-%m-%d %H:%M', time.localtime(note_ctime))
-                content = 'Created: {}  \n{}'.format(text_ctime, content)
-            if attachment_list:
-                content = 'Attachments: {}  \n{}'.format(', '.join(attachment_list), content)
-            if note_data.get('tag', '') and tags:
-                if no_spaces_in_tags:
-                    note_data['tag'] = [tag.replace(' ', '_') for tag in note_data['tag']]
-                tag_list = tag_delimiter.join(''.join((tag_prepend, tag)) for tag in note_data['tag'])
-                content = 'Tags: {}  \n{}'.format(tag_list, content)
-            if insert_title:
-                content = '{}\n{}\n{}'.format(note_title, '=' * len(note_title), content)
-
         if meta_data_in_yaml:
-            if attachment_list:
-                content = '{}\nAttachments:  {}\n{}'.format(create_yaml_block(), ', '.join(attachment_list), content)
-            else:
-                content = '{}\n{}'.format(create_yaml_block(), content)
+            content = '{}\n{}'.format(create_yaml_meta_block(), content)
+        else:
+            content = '{}\n{}'.format(create_text_meta_block(), content)
+
 
         if creation_date_in_filename and note_ctime:
             note_title = time.strftime('%Y-%m-%d ', time.localtime(note_ctime)) + note_title
-
 
 
         md_file_name = sanitise_path_string(note_title) or 'Untitled'
