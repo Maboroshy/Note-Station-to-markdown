@@ -54,7 +54,7 @@ def sanitise_path_string(path_str):
     path_str = path_str.replace('"', "'")
     path_str = urllib.parse.unquote(path_str)
 
-    return path_str[:240]
+    return path_str[:100]
 
 
 def create_yaml_meta_block():
