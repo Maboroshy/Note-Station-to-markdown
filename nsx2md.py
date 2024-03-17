@@ -11,7 +11,6 @@ import tempfile
 import subprocess
 import collections
 import urllib.request
-import distutils.version
 from urllib.parse import unquote
 
 from pathlib import Path
@@ -121,28 +120,9 @@ if not shutil.which('pandoc') and not os.path.isfile('pandoc'):
     print('Can\'t find pandoc. Please install pandoc or place it to the directory, where the script is.')
     exit(1)
 
-try:
-    pandoc_ver = subprocess.check_output(['pandoc', '-v'], timeout=3).decode('utf-8')[7:].split('\n', 1)[0].strip()
-    print('Found pandoc ' + pandoc_ver)
-
-    if distutils.version.LooseVersion(pandoc_ver) < distutils.version.LooseVersion('1.16'):
-        pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html',
-                       '--no-wrap', '-o', pandoc_output_file.name, pandoc_input_file.name]
-    elif distutils.version.LooseVersion(pandoc_ver) < distutils.version.LooseVersion('1.19'):
-        pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html',
-                       '--wrap=none', '-o', pandoc_output_file.name, pandoc_input_file.name]
-    elif distutils.version.LooseVersion(pandoc_ver) < distutils.version.LooseVersion('2.11.2'):
-        pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html',
-                       '--wrap=none', '--atx-headers', '-o',
-                       pandoc_output_file.name, pandoc_input_file.name]
-    else:
-        pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html',
-                       '--wrap=none', '--markdown-headings=atx', '-o',
-                       pandoc_output_file.name, pandoc_input_file.name]
-except Exception:
-    pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html',
-                   '--wrap=none', '--markdown-headings=atx', '-o',
-                   pandoc_output_file.name, pandoc_input_file.name]
+pandoc_args = ['pandoc', '-f', 'html', '-t', 'markdown_strict+pipe_tables-raw_html',
+               '--wrap=none', '--markdown-headings=atx', '-o',
+               pandoc_output_file.name, pandoc_input_file.name]
 
 if len(sys.argv) > 1:
     files_to_convert = [Path(path) for path in sys.argv[1:]]
