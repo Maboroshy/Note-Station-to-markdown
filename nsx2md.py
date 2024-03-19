@@ -207,10 +207,10 @@ for file in files_to_convert:
                 source = note_data['attachment'][attachment_id].get('source', '')
                 name = sanitise_path_string(note_data['attachment'][attachment_id]['name'])
                 name = name.replace('ns_attach_image_', '')
+                name_parts = name.rpartition('.')
 
                 n = 1
                 while Path(parent_notebook.media_path / name).is_file():
-                    name_parts = name.rpartition('.')
                     name = ''.join((name_parts[0], '_{}'.format(n), name_parts[1], name_parts[2]))
                     n += 1
 
