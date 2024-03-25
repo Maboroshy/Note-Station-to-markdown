@@ -19,7 +19,7 @@ from pathlib import Path
 # You can adjust some setting here. Default is for QOwnNotes app.
 
 ## Select meta data options
-meta_data_in_yaml = False  # True a YAML front matter block will contain the following meta data items.  
+meta_data_in_yaml = True  # True a YAML front matter block will contain the following meta data items.  
                            # False any selected meta data options below will be in the md text
 insert_title = True  # True will add the title of the note as a field in the YAML block, False no title in block.
 insert_ctime = False  # True to insert note creation time in the YAML block, False to disable.
@@ -30,7 +30,7 @@ tag_delimiter = ', '  # string to delimit tags, default is comma separated list
 no_spaces_in_tags = False  # True to replace spaces in tag names with '_', False to keep spaces
 
 ## Select file link options
-links_as_URI = True  # True for file://link%20target style links, False for /link target style links
+links_as_URI = False  # True for file://link%20target style links, False for /link target style links
 absolute_links = False  # True for absolute links, False for relative links
 
 ## Select File/Attachments/Media options
@@ -185,9 +185,10 @@ for file in files_to_convert:
             continue
 
         print('Converting note "{}"'.format(note_title))
-
-        content = re.sub('<img class=[^>]*syno-notestation-image-object[^>]*src=[^>]*ref=',
-                         '<img src=', note_data.get('content', ''))
+        
+        content = re.sub(r'<img [^>]*ref=([^ ]*)[^>]*class=[^ ]*syno-notestation-image-object[^>]*>|'
+                         r'<img [^>]*class=[^>]*syno-notestation-image-object[^>]*ref=([^ ]*)[^>]*>',
+                         r'<img src=\1\2>', note_data.get('content', ''))
 
 
         Path(pandoc_input_file.name).write_text(content, 'utf-8')
