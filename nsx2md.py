@@ -30,7 +30,9 @@ tag_delimiter = ', '  # string to delimit tags, default is comma separated list
 no_spaces_in_tags = False  # True to replace spaces in tag names with '_', False to keep spaces
 
 ## Select file link options
-links_as_URI = False  # True for file://link%20target style links, False for /link target style links
+prepend_links_with = ''  # Prepends file links with set string (ex. 'file://'), '' for no prepend
+encode_links_as_uri = True  # Encodes links' special characters with "percent-encoding"
+                            # True for "/link%20target" style links, False for "/link target" style links
 absolute_links = False  # True for absolute links, False for relative links
 
 ## Select File/Attachments/Media options
@@ -215,18 +217,19 @@ for file in files_to_convert:
                     name = ''.join((name_parts[0], '_{}'.format(n), name_parts[1], name_parts[2]))
                     n += 1
 
-                if links_as_URI:
-                    if absolute_links:
-                        link_path = Path(parent_notebook.media_path / name).as_uri()
-                    else:
-                        link_path = 'file://{}/{}'.format(urllib.request.pathname2url(media_dir_name),
-                                                          urllib.request.pathname2url(name))
+                
+                if absolute_links:
+                    link_path = str(Path(parent_notebook.media_path / name))
                 else:
-                    if absolute_links:
-                        link_path = str(Path(parent_notebook.media_path / name))
-                    else:
-                        link_path = '{}/{}'.format(media_dir_name, name)
-
+                    link_path = '{}/{}'.format(media_dir_name, name)
+                
+                if encode_links_as_uri:
+                    link_path = urllib.request.pathname2url(link_path).replace('///', '')
+                    
+                if prepend_links_with:
+                    link_path = ''.join((prepend_links_with, link_path))
+                
+                
                 try:
                     Path(parent_notebook.media_path / name).write_bytes(nsx_file.read('file_' + md5))
                     attachment_link = '[{}]({})'.format(name, link_path)
