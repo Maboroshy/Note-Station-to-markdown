@@ -11,16 +11,16 @@ import tempfile
 import subprocess
 import collections
 import urllib.request
-from urllib.parse import unquote
 
 from pathlib import Path
+from urllib.parse import unquote
 
 
 # You can adjust some setting here. Default is for QOwnNotes app.
 
 ## Select meta data options
-meta_data_in_yaml = True  # True a YAML front matter block will contain the following meta data items.  
-                           # False any selected meta data options below will be in the md text
+meta_data_in_yaml = True  # True a YAML front matter block will contain the following metadata items.  
+                           # False any selected metadata options below will be in the md text
 insert_title = True  # True will add the title of the note as a field in the YAML block, False no title in block.
 insert_ctime = False  # True to insert note creation time in the YAML block, False to disable.
 insert_mtime = False  # True to insert note modification time in the YAML block, False to disable.
