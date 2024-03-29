@@ -48,8 +48,8 @@ Select meta data options:
 `no_spaces_in_tags` - `True` to replace spaces in tag names with '_', `False` to keep spaces.
 
 Select file link options:  
-`prepend_links_with` - Prepends file links with set string (ex. 'file://'), '' for no prepend  
-`encode_links_as_uri` - Encodes links' special characters with "percent-encoding, `True` for "/link%20target" style links, `False` for "/link target" style links  
+`prepend_links_with` - Prepends file links with set string (ex. `'file://'`), `''` for no prepend  
+`encode_links_as_uri` - Encodes links' special characters with "percent-encoding, `True` for `/link%20target` style links, `False` for `/link target` style links  
 `absolute_links` - `True` for absolute links, `False` for relative links;  
 
 Select File/Attachments/Media options:  
