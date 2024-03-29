@@ -210,6 +210,10 @@ for file in files_to_convert:
                 source = note_data['attachment'][attachment_id].get('source', '')
                 name = sanitise_path_string(note_data['attachment'][attachment_id]['name'])
                 name = name.replace('ns_attach_image_', '')
+
+                if note_data['attachment'][attachment_id].get('type', '') == 'application/octet-stream':
+                    print("  The note has unsupported 'application/octet-stream' attachment '{}'".format(name))
+
                 name_parts = name.rpartition('.')
 
                 n = 1
