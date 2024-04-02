@@ -41,7 +41,7 @@ md_file_ext = 'md'  # extension for produced markdown syntax note files
 creation_date_in_filename = False  # True to insert note creation time to the note file name, False to disable.
 
 ## Pandoc markdown options (read the pandoc documentation before tweaking)
-pandoc_markdown_options = ['markdown_strict+pipe_tables-raw_html', '--wrap=none', '--markdown-headings=atx']
+pandoc_markdown_options = ['markdown_strict+pipe_tables-raw_html', '--wrap=none']
 
 
 ############################################################################
@@ -126,8 +126,8 @@ if not shutil.which('pandoc') and not os.path.isfile('pandoc'):
     print('Can\'t find pandoc. Please install pandoc or place it to the directory, where the script is.')
     exit(1)
 
-regular_pandoc_args = ['pandoc', '-f', 'html', '-t', *pandoc_markdown_options, '-o',
-                       pandoc_output_file.name, pandoc_input_file.name]
+pandoc_args = ['pandoc', '-f', 'html', '-t', *pandoc_markdown_options, '-o',
+               pandoc_output_file.name, pandoc_input_file.name]
 
 if len(sys.argv) > 1:
     files_to_convert = [Path(path) for path in sys.argv[1:]]
@@ -197,7 +197,7 @@ for file in files_to_convert:
 
 
         Path(pandoc_input_file.name).write_text(content, 'utf-8')
-        pandoc = subprocess.Popen(regular_pandoc_args)
+        pandoc = subprocess.Popen(pandoc_args)
         pandoc.wait(20)
         content = Path(pandoc_output_file.name).read_text('utf-8')
         
