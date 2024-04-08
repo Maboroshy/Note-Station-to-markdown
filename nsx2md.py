@@ -202,7 +202,7 @@ for file in files_to_convert:
         content = Path(pandoc_output_file.name).read_text('utf-8')
         
         if '[TABLE]' in content:
-            print('    Unconverted table found. Tweaking pandoc options may (or may not) allow to convert it.')
+            print('    Unconverted table found. Tweaking pandoc options inside the script may (or may not) allow to convert it.')
 
         attachments_data = note_data.get('attachment')
         attachment_list = []
