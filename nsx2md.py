@@ -50,8 +50,8 @@ Notebook = collections.namedtuple('Notebook', ['path', 'media_path'])
 
 
 def sanitise_path_string(path_str):
-    path_str = urllib.request.url2pathname(path_str)
-    
+    path_str = urllib.parse.unquote(path_str)
+
     for char in (':', '/', '\\', '|'):
         path_str = path_str.replace(char, '-')
     for char in ('?', '*'):
@@ -59,7 +59,6 @@ def sanitise_path_string(path_str):
     path_str = path_str.replace('<', '(')
     path_str = path_str.replace('>', ')')
     path_str = path_str.replace('"', "'")
-    path_str = urllib.parse.unquote(path_str)
 
     return path_str[:100]
 
