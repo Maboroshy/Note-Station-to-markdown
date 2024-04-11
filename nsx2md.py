@@ -134,7 +134,7 @@ pandoc_args = ['pandoc', '-f', 'html', '-t', *pandoc_markdown_options, '-o',
 if len(sys.argv) > 1:
     files_to_convert = [Path(path) for path in sys.argv[1:]]
 else:
-    files_to_convert = Path(work_path).glob('*.nsx')
+    files_to_convert = list(Path(work_path).glob('*.nsx'))
 
 if not files_to_convert:
     print('No .nsx files found')
