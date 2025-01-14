@@ -7,6 +7,8 @@ After conversion you get:
 3) Assigned tags and links to attachments at the beginning of note texts;
 4) All images and attached files in `media` subdirectories inside notebook directories.
 
+The conversion is mostly limited to pandoc capabilities. Note Station specific content may be missing from the converted notes.
+
 ## Local installation
 
 1) The script requires [Python 3.5+](https://www.python.org/downloads/) and [pandoc](http://pandoc.org/installing.html) installed on your system. Get the installation packages or use the package manager of your OS.
