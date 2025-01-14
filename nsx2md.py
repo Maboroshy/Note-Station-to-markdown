@@ -176,7 +176,11 @@ for file in files_to_convert:
     converted_note_ids = []
 
     for note_id in config_data['note']:
-        note_data = json.loads(nsx_file.read(note_id).decode('utf-8'))
+        try:
+            note_data = json.loads(nsx_file.read(note_id).decode('utf-8'))
+        except KeyError:
+            print('No text for {}. It may be an encrypted note not included in the .nsx file.'.format(note_id))
+            continue
 
         note_title = note_data.get('title', 'Untitled')
         note_ctime = note_data.get('ctime', '')
