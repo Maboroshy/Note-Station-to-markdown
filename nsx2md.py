@@ -196,11 +196,17 @@ for file in files_to_convert:
 
         print('Converting note "{}"'.format(note_title))
         
+        content = note_data.get('content', '')
+        
+        content = re.sub(r'<iframe[^>]*www\.youtube\.com/watch\?v=(\w+)[^/]*</iframe>',
+                         r'<a href=\"https://www.youtube.com/watch?v=\1\">'
+                         r'<img src=\"https://img.youtube.com/vi/\1/mqdefault.jpg\"></a>', 
+                         content)
+
         content = re.sub(r'<img [^>]*ref=([^ ]*)[^>]*class=[^ ]*syno-notestation-image-object[^>]*>|'
                          r'<img [^>]*class=[^>]*syno-notestation-image-object[^>]*ref=([^ ]*)[^>]*>',
-                         r'<img src=\1\2>', note_data.get('content', ''))
-
-
+                         r'<img src=\1\2>', content)
+        
         Path(pandoc_input_file.name).write_text(content, 'utf-8')
         pandoc = subprocess.Popen(pandoc_args)
         pandoc.wait(20)
