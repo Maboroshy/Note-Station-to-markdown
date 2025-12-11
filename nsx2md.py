@@ -16,29 +16,29 @@ from pathlib import Path
 from urllib.parse import unquote
 
 
-# You can adjust some setting here. Default is for QOwnNotes app.
+# You can adjust some setting here.  Default is for QOwnNotes app. 
 
-## Select meta data options
-meta_data_in_yaml = True  # True a YAML front matter block will contain the following metadata items.  
-                           # False any selected metadata options below will be in the md text
-insert_title = True  # True will add the title of the note as a field in the YAML block, False no title in block.
-insert_ctime = False  # True to insert note creation time in the YAML block, False to disable.
-insert_mtime = False  # True to insert note modification time in the YAML block, False to disable.
-tags = True  # True to insert list of tags, False to disable
-tag_prepend = ''  # string to prepend each tag in a tag list inside the note, default is empty
-tag_delimiter = ', '  # string to delimit tags, default is comma separated list
-no_spaces_in_tags = False  # True to replace spaces in tag names with '_', False to keep spaces
+## 选择元数据选项
+meta_data_in_yaml = True  # 若为 True，YAML 前置块将包含以下元数据项。   
+                           # 若为 False，下方选中的元数据选项将置于 Markdown 文本中
+insert_title = True  # 若为 True，将在 YAML 块中添加笔记标题字段；若为 False，则不在块中包含标题
+insert_ctime = True  # 若为 True，将在 YAML 块中插入笔记创建时间；若为 False，则禁用
+insert_mtime = True  # 若为 True，将在 YAML 块中插入笔记修改时间；若为 False，则禁用
+tags = True  # 若为 True，将插入标签列表；若为 False，则禁用
+tag_prepend = ''  # 在笔记内标签列表中为每个标签添加的前缀字符串，默认为空
+tag_delimiter = ', '  # 分隔标签的字符串，默认为逗号分隔列表
+no_spaces_in_tags = False  # 若为 True，将标签名称中的空格替换为 '_'；若为 False，则保留空格
 
-## Select file link options
-prepend_links_with = ''  # Prepends file links with set string (ex. 'file://'), '' for no prepend
-encode_links_as_uri = True  # Encodes links' special characters with "percent-encoding"
-                            # True for "/link%20target" style links, False for "/link target" style links
-absolute_links = False  # True for absolute links, False for relative links
+## 选择文件链接选项
+prepend_links_with = ''  # 为文件链接添加预设字符串前缀（例如 'file://'），'' 表示不添加前缀
+encode_links_as_uri = True  # 使用“百分比编码”对链接中的特殊字符进行编码
+                            # True 对应 "/link%20target" 样式链接，False 对应 "/link target" 样式链接
+absolute_links = False  # 若为 True，使用绝对链接；若为 False，使用相对链接
 
-## Select File/Attachments/Media options
-media_dir_name = 'media'  # name of the directory inside the produced directory where all images and attachments will be stored
-md_file_ext = 'md'  # extension for produced markdown syntax note files
-creation_date_in_filename = False  # True to insert note creation time to the note file name, False to disable.
+## 选择文件/附件/媒体选项
+media_dir_name = 'media'  # 在生成的目录中用于存储所有图像和附件的子目录名称
+md_file_ext = 'md'  # 生成的 Markdown 语法笔记文件的扩展名
+creation_date_in_filename = False  # 若为 True，将笔记创建时间插入笔记文件名；若为 False，则禁用
 
 ## Pandoc markdown options (read the pandoc documentation before tweaking)
 pandoc_markdown_options = ['markdown_strict+pipe_tables-raw_html', '--wrap=none']
@@ -49,18 +49,69 @@ pandoc_markdown_options = ['markdown_strict+pipe_tables-raw_html', '--wrap=none'
 Notebook = collections.namedtuple('Notebook', ['path', 'media_path'])
 
 
-def sanitise_path_string(path_str):
+def sanitise_path_string(path_str, max_bytes=200):
+    """
+    Sanitize path string and ensure it doesn't exceed max_bytes in UTF-8 encoding.
+    Default max_bytes is 200 to leave room for parent path and extension.
+    """
     path_str = urllib.parse.unquote(path_str)
 
     for char in (':', '/', '\\', '|'):
         path_str = path_str.replace(char, '-')
-    for char in ('?', '*'):
+    for char in ('? ', '*'):
         path_str = path_str.replace(char, '')
     path_str = path_str.replace('<', '(')
     path_str = path_str.replace('>', ')')
     path_str = path_str.replace('"', "'")
 
-    return path_str[:100]
+    # Ensure the string doesn't exceed max_bytes when encoded as UTF-8
+    encoded = path_str.encode('utf-8')
+    if len(encoded) > max_bytes:
+        # Truncate byte by byte to avoid cutting in the middle of a multi-byte character
+        encoded = encoded[:max_bytes]
+        # Decode and ignore errors at the end (in case we cut a multi-byte char)
+        path_str = encoded.decode('utf-8', errors='ignore')
+        # Remove trailing whitespace that might result from truncation
+        path_str = path_str.rstrip()
+    
+    return path_str
+
+
+def safe_file_path(base_path, file_name, extension):
+    """
+    Create a safe file path that won't exceed filesystem limits.
+    Handles conflicts by adding numeric suffixes.
+    """
+    # Calculate max bytes for filename (255 bytes total - extension - dot - some margin)
+    max_filename_bytes = 240 - len(extension.encode('utf-8'))
+    
+    sanitised_name = sanitise_path_string(file_name, max_bytes=max_filename_bytes)
+    
+    if not sanitised_name:
+        sanitised_name = 'Untitled'
+    
+    file_path = Path(base_path / f'{sanitised_name}.{extension}')
+    
+    n = 1
+    while file_path.is_file():
+        # Account for the suffix length in bytes
+        suffix = f'_{n}'
+        suffix_bytes = len(suffix.encode('utf-8'))
+        adjusted_max = max_filename_bytes - suffix_bytes
+        
+        truncated_name = sanitise_path_string(file_name, max_bytes=adjusted_max)
+        file_path = Path(base_path / f'{truncated_name}{suffix}.{extension}')
+        n += 1
+        
+        # Safety break to avoid infinite loops
+        if n > 10000:
+            # Use a hash-based name as last resort
+            import hashlib
+            hash_name = hashlib.md5(file_name.encode('utf-8')).hexdigest()[:16]
+            file_path = Path(base_path / f'{hash_name}.{extension}')
+            break
+    
+    return file_path
 
 
 def create_yaml_meta_block():
@@ -78,7 +129,7 @@ def create_yaml_meta_block():
         yaml_block = '{}Modified: "{}"\n'.format(yaml_block, yaml_text_mtime)
 
     if tags and note_data.get('tag', ''):
-        if no_spaces_in_tags:
+        if no_spaces_in_tags: 
             note_data['tag'] = [tag.replace(' ', '_') for tag in note_data['tag']]
         yaml_tag_list = tag_delimiter.join(''.join((tag_prepend, tag)) for tag in note_data['tag'])
         yaml_block = '{}Tags: [{}]\n'.format(yaml_block, yaml_tag_list)
@@ -94,7 +145,7 @@ def create_yaml_meta_block():
 def create_text_meta_block():
     text_block = ''
     
-    if insert_mtime and note_mtime:
+    if insert_mtime and note_mtime: 
         text_mtime = time.strftime('%Y-%m-%d %H:%M', time.localtime(note_mtime))
         text_block = 'Modified: {}  \n{}'.format(text_mtime, text_block)
         
@@ -124,7 +175,7 @@ pandoc_output_file = tempfile.NamedTemporaryFile(delete=False)
 
 
 if not shutil.which('pandoc') and not os.path.isfile('pandoc'):
-    print('Can\'t find pandoc. Please install pandoc or place it to the directory, where the script is.')
+    print('Can\'t find pandoc.  Please install pandoc or place it to the directory, where the script is.')
     exit(1)
 
 pandoc_args = ['pandoc', '-f', 'html', '-t', *pandoc_markdown_options, '-o',
@@ -157,7 +208,7 @@ for file in files_to_convert:
 
     print('Extracting notes from "{}"'.format(file.name))
 
-    for notebook_id in config_data['notebook']:
+    for notebook_id in config_data['notebook']: 
         notebook_data = json.loads(nsx_file.read(notebook_id).decode('utf-8'))
         notebook_title = notebook_data['title'] or 'Untitled'
         notebook_path = work_path / Path(sanitise_path_string(notebook_title))
@@ -198,7 +249,7 @@ for file in files_to_convert:
         
         content = note_data.get('content', '')
         
-        content = re.sub(r'<iframe[^>]*www\.youtube\.com/watch\?v=(\w+)[^/]*</iframe>',
+        content = re.sub(r'<iframe[^>]*www\. youtube\.com/watch\?v=(\w+)[^/]*</iframe>',
                          r'<a href=\"https://www.youtube.com/watch?v=\1\">'
                          r'<img src=\"https://img.youtube.com/vi/\1/mqdefault.jpg\"></a>', 
                          content)
@@ -218,7 +269,7 @@ for file in files_to_convert:
         attachments_data = note_data.get('attachment')
         attachment_list = []
 
-        if attachments_data:
+        if attachments_data: 
             for attachment_id in note_data.get('attachment', ''):
 
                 ref = note_data['attachment'][attachment_id].get('ref', '')
@@ -253,7 +304,7 @@ for file in files_to_convert:
                 try:
                     Path(parent_notebook.media_path / name).write_bytes(nsx_file.read('file_' + md5))
                     attachment_link = '[{}]({})'.format(name, link_path)
-                except Exception:
+                except Exception: 
                     if source:
                         attachment_link = '[{}]({})'.format(name, source)
                     else:
@@ -265,12 +316,12 @@ for file in files_to_convert:
                     content = content.replace(ref, source)
                 elif ref:
                     content = content.replace(ref, link_path)
-                else:
+                else: 
                     attachment_list.append(attachment_link)
 
 
         if note_data.get('tag', '') or attachment_list or insert_title \
-                or insert_ctime or insert_mtime:
+                or insert_ctime or insert_mtime: 
             content = '\n' + content
 
 
@@ -284,14 +335,8 @@ for file in files_to_convert:
             note_title = time.strftime('%Y-%m-%d ', time.localtime(note_ctime)) + note_title
 
 
-        md_file_name = sanitise_path_string(note_title) or 'Untitled'
-        md_file_path = Path(parent_notebook.path / '{}.{}'.format(md_file_name, md_file_ext))
-
-        n = 1
-        while md_file_path.is_file():
-            md_file_path = Path(parent_notebook.path / ('{}_{}.{}'.format(
-                                            sanitise_path_string(note_title), n, md_file_ext)))
-            n += 1
+        # Use the new safe_file_path function
+        md_file_path = safe_file_path(parent_notebook.path, note_title, md_file_ext)
 
         md_file_path.write_text(content, 'utf-8')
 
