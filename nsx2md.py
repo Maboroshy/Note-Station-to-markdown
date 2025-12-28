@@ -60,7 +60,7 @@ def sanitise_path_string(path_str):
     path_str = path_str.replace('>', ')')
     path_str = path_str.replace('"', "'")
 
-    return path_str[:100]
+    return path_str[:50]
 
 
 def create_yaml_meta_block():
