@@ -60,6 +60,10 @@ def sanitise_path_string(path_str):
     path_str = path_str.replace('>', ')')
     path_str = path_str.replace('"', "'")
 
+    for char in path_str:
+        if not char.isprintable():
+            path_str = path_str.replace(char, ' ')
+
     return path_str[:50]
 
 
