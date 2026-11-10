@@ -64,6 +64,10 @@ def sanitise_path_string(path_str):
         if not char.isprintable():
             path_str = path_str.replace(char, ' ')
 
+    # Windows file names cannot start with a space or end with a space or dot
+    path_str = path_str.lstrip()
+    path_str = path_str.rstrip('. ')
+
     return path_str[:50]
 
 
